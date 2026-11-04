@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Cat from "./Cat";
 import { clean, LIMITS, validateCard } from "@/lib/card";
@@ -169,7 +170,9 @@ export default function Builder() {
     const name = clean(draft.to);
     return (
       <main className="builder">
-        <p className="brand">[ lovecat ]</p>
+        <p className="brand">
+          <Link href="/">[ lovecat ]</Link>
+        </p>
         <section className="panel result" aria-live="polite">
           <h2>{name ? `${name}'s cat is ready` : "Your cat is ready"}</h2>
           <p className="hint">Send this link. Anyone with it can pet the cat and read the notes.</p>
@@ -198,13 +201,15 @@ export default function Builder() {
     );
   }
 
-  const previewTo = clean(draft.to) || "you";
+  const previewTo = clean(draft.to) || null;
   const previewFrom = clean(draft.from) || null;
 
   return (
     <>
       <main className="builder">
-        <p className="brand">[ lovecat ]</p>
+        <p className="brand">
+          <Link href="/">[ lovecat ]</Link>
+        </p>
         <h1>Send someone a cat that says nice things</h1>
         <p className="lede">
           Pick some notes or write your own. They pet the cat, and the cat tells them one at a time.

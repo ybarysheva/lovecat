@@ -221,6 +221,27 @@
 }
 .cat-footer a:hover, .cat-footer button:hover { text-decoration: underline; }
 
+/* Landing page: a line of explanation and a bigger "make your own" button, pinned to
+   the bottom of the screen so it's always visible. The padding keeps room for it. */
+.cat-scene:has(.cat-cta) { padding-bottom: 120px; }
+.cat-scene:has(.cat-cta) .cat-footer { position: fixed; }
+.cat-cta-line {
+  color: #1C1410;
+  opacity: 0.75;
+  font-size: 0.75rem;
+  margin: 0 auto 8px;
+  line-height: 1.5;
+}
+.cat-footer a.cat-cta {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 12px 22px;
+  border-radius: 4px;
+  box-shadow: 3px 3px 0 rgba(28, 20, 16, 0.35);
+}
+
 /* Bubble text can't overflow a narrow phone, and on phones it sits above the
    treat bag and laser (fixed, z-index 100) so the note is never covered. */
 .bubble { max-width: min(300px, calc(100vw - 40px)); overflow-wrap: anywhere; z-index: 150; }

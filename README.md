@@ -2,8 +2,9 @@
 
 Send someone a little cat that tells them nice things when they pet it.
 
-- `/` is the builder. The sender enters the recipient's name (and optionally their own), writes notes or picks from a starter list, previews the cat, and taps **Create link**. Their draft is kept in the browser until the link is made.
-- `/c/<id>` is the cat. Pet it for a note (shuffled, no repeats until every note has been shown), throw it a treat, or play with the laser pointer. The label reads `[ pet the cat to receive love, <name> ]`.
+- `/` is a demo cat, so visitors can pet it and see how it works first. Its first note says hello; the rest are in `DEMO_NOTES` in `lib/starter-notes.ts`. A **make your own cat** button at the bottom goes to the builder.
+- `/make` is the builder. The sender enters the recipient's name (and optionally their own), writes notes or picks from a starter list, previews the cat, and taps **Create link**. Their draft is kept in the browser until the link is made.
+- `/c/<id>` is a sent cat. Pet it for a note (shuffled, no repeats until every note has been shown), throw it a treat, or play with the laser pointer. The label reads `[ pet the cat to receive love, <name> ]`.
 - Pasting a cat link in a chat shows a preview: "A cat for <name>".
 
 The cat is ported from the original single-page lil cat ([ybarysheva/love](https://github.com/ybarysheva/love)).
@@ -42,7 +43,8 @@ On Vercel, if the Redis env vars are missing, creating a cat returns a clear "St
 
 - `components/Cat.tsx` and `components/cat.css`: the cat (markup, behaviour, sounds).
 - `components/Builder.tsx`: the builder page.
-- `lib/starter-notes.ts`: the notes senders can pick from. Edit freely; existing cats keep their own copy.
+- `lib/starter-notes.ts`: the notes senders can pick from, and what the demo cat says. Edit freely; existing cats keep their own copy.
+- `app/page.tsx`: the landing page (demo cat). `app/make/page.tsx`: the builder.
 - `lib/card.ts`: the shape of a cat and its limits (name 40 characters, up to 50 notes of 200 characters), shared by the builder and the API.
 - `app/api/cards/route.ts`: creates a cat (rate limit, validation, save).
 - `app/c/[id]/`: the cat page and its link-preview image.

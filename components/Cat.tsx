@@ -4,16 +4,19 @@ import { useEffect, useRef } from "react";
 import "./cat.css";
 
 type Props = {
-  to: string;
+  /** The recipient's name; null for the demo cat, which just says "pet the cat". */
+  to: string | null;
   from: string | null;
   notes: string[];
+  /** Show notes[0] on the first pet (the demo cat's hello), then shuffle as usual. */
+  startWithFirst?: boolean;
   /** Shown at the bottom of the scene: "make your own" on a cat page, "back to editing" in preview. */
   footer?: React.ReactNode;
 };
 
 // The cat from the original lil cat page. The markup is JSX; the behaviour is the
 // original script, scoped to this component's root and cleaned up on unmount.
-export default function Cat({ to, from, notes, footer }: Props) {
+export default function Cat({ to, from, notes, startWithFirst = false, footer }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const notesRef = useRef(notes);
   notesRef.current = notes;
@@ -21,7 +24,7 @@ export default function Cat({ to, from, notes, footer }: Props) {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    return startCat(root, () => notesRef.current);
+    return startCat(root, () => notesRef.current, startWithFirst);
   }, []);
 
   return (
@@ -105,7 +108,7 @@ export default function Cat({ to, from, notes, footer }: Props) {
           </div>
         </div>
 
-        <p className="cat-label">[ pet the cat to receive love, {to} ]</p>
+        <p className="cat-label">{to ? `[ pet the cat to receive love, ${to} ]` : "[ pet the cat to receive love ]"}</p>
         {from && <p className="cat-from">with love from {from}</p>}
       </div>
 
@@ -123,7 +126,7 @@ function newAudioContext(): AudioContext {
 }
 
 /** Wires up the cat inside `root`. Returns a cleanup function. */
-function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
+function startCat(root: HTMLElement, getNotes: () => string[], startWithFirst: boolean): () => void {
   const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
 
   const bubble = $("[data-bubble]");
@@ -171,6 +174,16 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
 
   function nextNote(): string {
     const notes = getNotes();
+    if (startWithFirst && lastShown === null && notes.length > 0) {
+      // The first note is said once up front; the shuffle-bag starts without it.
+      lastShown = notes[0];
+      queue = notes.slice(1);
+      for (let i = queue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [queue[i], queue[j]] = [queue[j], queue[i]];
+      }
+      return lastShown;
+    }
     queue = queue.filter((n) => notes.includes(n)); // drop notes removed while previewing
     if (queue.length === 0) {
       queue = [...notes];
