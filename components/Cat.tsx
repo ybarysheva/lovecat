@@ -469,7 +469,15 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   }
 
   // ---- LASER POINTER ----
-  let laserActive = false;
+  // Tapping the laser turns it on: the dot follows the mouse or finger until the laser
+  // is tapped again. On touch screens the dot stays where the finger was lifted.
+  const eyeBgL = $(".cat-eye-bg--l");
+  const eyeBgR = $(".cat-eye-bg--r");
+  let laserDot: HTMLElement | null = null;
+  let lastSample: { x: number; y: number; t: number } | null = null;
+
+  const SWIPE_SPEED = 1.2; // px per ms; faster dot movement than this makes the cat swipe
+  const PUPIL_TRAVEL = 3; // px the pupils can move inside their light rings
 
   function catCenterX() {
     const r = cssCat.getBoundingClientRect();
@@ -480,6 +488,25 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     // Tilt toward dot: left = negative rotate, right = positive, capped at ±9deg
     const tilt = Math.max(-9, Math.min(9, (dotX - catCenterX()) * 0.04));
     catFaceGroup.style.transform = `rotate(${tilt}deg)`;
+  }
+
+  function lookAt(x: number, y: number) {
+    for (const [eye, ring] of [
+      [eyeL, eyeBgL],
+      [eyeR, eyeBgR],
+    ] as const) {
+      const r = ring.getBoundingClientRect();
+      const dx = x - (r.left + r.width / 2);
+      const dy = y - (r.top + r.height / 2);
+      const dist = Math.hypot(dx, dy);
+      if (dist < 0.5) {
+        eye.style.translate = "";
+        continue;
+      }
+      // Full travel once the dot is a little way off; less when it's right in front.
+      const reach = Math.min(1, dist / 60) * PUPIL_TRAVEL;
+      eye.style.translate = `${((dx / dist) * reach).toFixed(2)}px ${((dy / dist) * reach).toFixed(2)}px`;
+    }
   }
 
   function triggerPawSwipe(dotX: number) {
@@ -500,74 +527,64 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     catFaceGroup.style.transform = "";
     pawL.classList.remove("swiping");
     pawR.classList.remove("swiping");
+    eyeL.style.translate = "";
+    eyeR.style.translate = "";
   }
 
-  function startLaser() {
-    if (laserActive) return;
-    laserActive = true;
+  function moveDot(x: number, y: number) {
+    if (!laserDot) return;
+    laserDot.style.left = x + "px";
+    laserDot.style.top = y + "px";
+    tiltHead(x);
+    lookAt(x, y);
+
+    // Paw swipes on fast movement, measured over at least 40ms so jittery events don't count.
+    const t = performance.now();
+    if (!lastSample) {
+      lastSample = { x, y, t };
+    } else if (t - lastSample.t >= 40) {
+      const speed = Math.hypot(x - lastSample.x, y - lastSample.y) / (t - lastSample.t);
+      if (speed > SWIPE_SPEED) triggerPawSwipe(x);
+      lastSample = { x, y, t };
+    }
+  }
+
+  const onPointer = (e: PointerEvent) => moveDot(e.clientX, e.clientY);
+
+  function startLaser(x: number, y: number) {
     laserBtn.classList.add("active");
+    root.classList.add("laser-on"); // stops touch drags from scrolling the page
     startLaserReactions();
 
-    const dot = document.createElement("div");
-    dot.className = "laser-dot";
-    root.appendChild(dot);
+    laserDot = document.createElement("div");
+    laserDot.className = "laser-dot";
+    root.appendChild(laserDot);
+    lastSample = null;
+    moveDot(x, y); // starts where the laser was tapped
 
-    // Floor zone: bottom 35% of screen, horizontal middle 80%
-    const viewW = window.innerWidth;
-    const viewH = window.innerHeight;
-    const floorTop = viewH * 0.62;
-    const floorBot = viewH * 0.92;
-    const floorLeft = viewW * 0.1;
-    const floorRight = viewW * 0.9;
-    const randFloorX = () => floorLeft + Math.random() * (floorRight - floorLeft);
-    const randFloorY = () => floorTop + Math.random() * (floorBot - floorTop);
-
-    const x = randFloorX();
-    dot.style.left = x + "px";
-    dot.style.top = randFloorY() + "px";
-    tiltHead(x);
-
-    const SESSION_MS = 4500;
-    const start = performance.now();
-
-    function scheduleNextMove() {
-      if (performance.now() - start >= SESSION_MS) {
-        endLaser(dot);
-        return;
-      }
-
-      const fast = Math.random() < 0.7;
-      const travelMs = fast ? 80 + Math.random() * 140 : 320 + Math.random() * 280;
-      const pauseMs = fast ? 40 + Math.random() * 180 : 200 + Math.random() * 300;
-
-      const tx = randFloorX();
-      const ty = randFloorY();
-      dot.style.transition = `left ${travelMs}ms linear, top ${travelMs}ms linear`;
-      dot.style.left = tx + "px";
-      dot.style.top = ty + "px";
-
-      // Head follows dot
-      tiltHead(tx);
-
-      // Paw swipe only on fast darts, ~55% of the time
-      if (fast && Math.random() < 0.55) later(() => triggerPawSwipe(tx), travelMs * 0.6);
-
-      later(scheduleNextMove, travelMs + pauseMs);
-    }
-
-    scheduleNextMove();
+    document.addEventListener("pointermove", onPointer);
+    document.addEventListener("pointerdown", onPointer);
   }
 
-  function endLaser(dot: HTMLElement) {
+  function stopLaser() {
+    document.removeEventListener("pointermove", onPointer);
+    document.removeEventListener("pointerdown", onPointer);
     stopLaserReactions();
+    root.classList.remove("laser-on");
+    laserBtn.classList.remove("active");
+
+    const dot = laserDot;
+    laserDot = null;
+    if (!dot) return;
     dot.style.transition = "opacity 0.3s";
     dot.style.opacity = "0";
-    later(() => {
-      dot.remove();
-      laserBtn.classList.remove("active");
-      laserActive = false;
-    }, 300);
+    later(() => dot.remove(), 300);
   }
+
+  const onLaserClick = (e: MouseEvent) => {
+    if (laserDot) stopLaser();
+    else startLaser(e.clientX, e.clientY);
+  };
 
   // ---- EVENTS ----
   const onDocClick = (e: MouseEvent) => {
@@ -580,7 +597,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
 
   squish.addEventListener("click", handlePet);
   treatBag.addEventListener("click", throwTreat);
-  laserBtn.addEventListener("click", startLaser);
+  laserBtn.addEventListener("click", onLaserClick);
   document.addEventListener("click", onDocClick);
   document.addEventListener("keydown", onKey);
 
@@ -591,9 +608,11 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     audio.forEach((ctx) => ctx.close().catch(() => {}));
     squish.removeEventListener("click", handlePet);
     treatBag.removeEventListener("click", throwTreat);
-    laserBtn.removeEventListener("click", startLaser);
+    laserBtn.removeEventListener("click", onLaserClick);
     document.removeEventListener("click", onDocClick);
     document.removeEventListener("keydown", onKey);
+    document.removeEventListener("pointermove", onPointer);
+    document.removeEventListener("pointerdown", onPointer);
     root.querySelectorAll(".treat-flying, .heart-particle, .laser-dot").forEach((el) => el.remove());
   };
 }

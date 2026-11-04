@@ -498,6 +498,9 @@
   animation: blink 4.2s ease-in-out infinite;
 }
 .cat-eye-l  { left: 20px;  }
+/* Pupils glide toward the laser dot (set via the `translate` property, which leaves the
+   blink animation's transform alone). */
+.cat-eye-l, .cat-eye-r { transition: translate 0.08s linear; }
 .cat-eye-r  { right: 20px; animation-delay: 0.07s; }
 .cat-eye-l::before, .cat-eye-r::before {
   content: '';
@@ -672,7 +675,10 @@
 }
 .laser-btn:hover  { transform: scale(1.1) rotate(-5deg); }
 .laser-btn:active { transform: scale(0.92); }
-.laser-btn.active { opacity: 0.5; cursor: default; }
+.laser-btn.active { opacity: 0.5; }
+
+/* While the laser is on, dragging a finger moves the dot instead of scrolling or selecting. */
+.cat-scene.laser-on { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 
 .laser-body {
   position: relative;

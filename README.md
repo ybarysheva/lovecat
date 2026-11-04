@@ -4,7 +4,7 @@ Send someone a little cat that tells them nice things when they pet it.
 
 - `/` is a demo cat, so visitors can pet it and see how it works first. For now it says the starter notes (set in `app/page.tsx`). A **make your own cat** button at the bottom goes to the builder.
 - `/make` is the builder. The sender enters the recipient's name (and optionally their own), writes notes or picks from a starter list, previews the cat, and taps **Create link**. Their draft is kept in the browser until the link is made.
-- `/c/<id>` is a sent cat. Pet it for a note (shuffled, no repeats until every note has been shown), throw it a treat, or play with the laser pointer. The label reads `[ pet the cat to receive love, <name> ]`.
+- `/c/<id>` is a sent cat. Pet it for a note (shuffled, no repeats until every note has been shown), throw it a treat, or play with the laser pointer: tap it to turn it on, then move the mouse or drag a finger and the cat's eyes and head follow the dot (fast moves make it swipe). Tap the laser again to turn it off. The label reads `[ pet the cat to receive love, <name> ]`.
 - Pasting a cat link in a chat shows a preview: "A cat for <name>".
 
 The cat is ported from the original single-page lil cat ([ybarysheva/love](https://github.com/ybarysheva/love)).
