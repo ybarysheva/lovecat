@@ -679,6 +679,8 @@
 
 /* While the laser is on, dragging a finger moves the dot instead of scrolling or selecting. */
 .cat-scene.laser-on { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+/* With a mouse, the red dot is the pointer: hide the arrow while the laser is on. */
+.cat-scene.laser-on, .cat-scene.laser-on * { cursor: none !important; }
 
 .laser-body {
   position: relative;
