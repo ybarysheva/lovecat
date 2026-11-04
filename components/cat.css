@@ -221,17 +221,10 @@
 }
 .cat-footer a:hover, .cat-footer button:hover { text-decoration: underline; }
 
-/* Landing page: a line of explanation and a bigger "make your own" button, pinned to
-   the bottom of the screen so it's always visible. The padding keeps room for it. */
-.cat-scene:has(.cat-cta) { padding-bottom: 120px; }
+/* Landing page: a bigger "make your own cat" button, pinned to the bottom of the
+   screen so it's always visible. The padding keeps room for it. */
+.cat-scene:has(.cat-cta) { padding-bottom: 96px; }
 .cat-scene:has(.cat-cta) .cat-footer { position: fixed; }
-.cat-cta-line {
-  color: #1C1410;
-  opacity: 0.75;
-  font-size: 0.75rem;
-  margin: 0 auto 8px;
-  line-height: 1.5;
-}
 .cat-footer a.cat-cta {
   display: inline-block;
   font-size: 0.95rem;

@@ -8,15 +8,13 @@ type Props = {
   to: string | null;
   from: string | null;
   notes: string[];
-  /** Show notes[0] on the first pet (the demo cat's hello), then shuffle as usual. */
-  startWithFirst?: boolean;
   /** Shown at the bottom of the scene: "make your own" on a cat page, "back to editing" in preview. */
   footer?: React.ReactNode;
 };
 
 // The cat from the original lil cat page. The markup is JSX; the behaviour is the
 // original script, scoped to this component's root and cleaned up on unmount.
-export default function Cat({ to, from, notes, startWithFirst = false, footer }: Props) {
+export default function Cat({ to, from, notes, footer }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const notesRef = useRef(notes);
   notesRef.current = notes;
@@ -24,7 +22,7 @@ export default function Cat({ to, from, notes, startWithFirst = false, footer }:
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    return startCat(root, () => notesRef.current, startWithFirst);
+    return startCat(root, () => notesRef.current);
   }, []);
 
   return (
@@ -126,7 +124,7 @@ function newAudioContext(): AudioContext {
 }
 
 /** Wires up the cat inside `root`. Returns a cleanup function. */
-function startCat(root: HTMLElement, getNotes: () => string[], startWithFirst: boolean): () => void {
+function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
 
   const bubble = $("[data-bubble]");
@@ -174,16 +172,6 @@ function startCat(root: HTMLElement, getNotes: () => string[], startWithFirst: b
 
   function nextNote(): string {
     const notes = getNotes();
-    if (startWithFirst && lastShown === null && notes.length > 0) {
-      // The first note is said once up front; the shuffle-bag starts without it.
-      lastShown = notes[0];
-      queue = notes.slice(1);
-      for (let i = queue.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [queue[i], queue[j]] = [queue[j], queue[i]];
-      }
-      return lastShown;
-    }
     queue = queue.filter((n) => notes.includes(n)); // drop notes removed while previewing
     if (queue.length === 0) {
       queue = [...notes];

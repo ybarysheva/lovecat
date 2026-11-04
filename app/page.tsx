@@ -1,6 +1,9 @@
 import Link from "next/link";
 import Cat from "@/components/Cat";
-import { DEMO_NOTES } from "@/lib/starter-notes";
+import { STARTER_NOTES } from "@/lib/starter-notes";
+
+// Placeholder: the demo cat says the builder's starter notes until it has its own.
+const DEMO_NOTES = STARTER_NOTES.flatMap((g) => g.notes);
 
 // The landing page is a working cat, so people see how it feels before making one.
 export default function Home() {
@@ -9,14 +12,10 @@ export default function Home() {
       to={null}
       from={null}
       notes={DEMO_NOTES}
-      startWithFirst
       footer={
-        <>
-          <p className="cat-cta-line">send someone a cat of their own</p>
-          <Link className="cat-cta" href="/make">
-            make your own cat →
-          </Link>
-        </>
+        <Link className="cat-cta" href="/make">
+          make your own cat
+        </Link>
       }
     />
   );

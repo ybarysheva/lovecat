@@ -48,19 +48,3 @@ export const STARTER_NOTES: { group: string; notes: string[] }[] = [
   },
 ];
 
-// What the demo cat on the landing page says: a few hints about how it works, mixed
-// in with starter notes.
-export const DEMO_NOTES: string[] = [
-  "Hi! I'm a demo cat. Pet me again for another note.",
-  "Someone who loves you can fill a cat like me with their own notes",
-  "Try the treat bag. I won't say no.",
-  "I also have a laser pointer. Just saying.",
-  "You are doing better than you think",
-  "I'm so glad you exist",
-  "Drink some water. I love you.",
-  "Certified cutie. The cat checked.",
-  "You are allowed to rest",
-  "Meow (translation: you're wonderful)",
-  "Thinking about you right now",
-  "This cat was paid in treats to tell you you're great",
-];
