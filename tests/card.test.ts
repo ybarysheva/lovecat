@@ -21,7 +21,7 @@ test("every field's problem is reported at once", () => {
   const result = validateCard({ to: "", notes: [] });
   assert.ok(!result.ok);
   assert.equal(result.errors.to, "Add who the cat is for.");
-  assert.equal(result.errors.notes, "Add at least one note.");
+  assert.equal(result.errors.notes, "Add at least one message.");
   assert.equal(result.error, result.errors.to); // the first problem, for simple callers
 });
 

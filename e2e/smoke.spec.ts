@@ -25,11 +25,11 @@ test("make a cat, then open its link", async ({ page }) => {
   // Nothing filled in: errors appear under the fields.
   await page.getByRole("button", { name: "Create link" }).click();
   await expect(page.locator("#to-error")).toHaveText("Add who the cat is for.");
-  await expect(page.locator("#notes-error")).toHaveText("Add at least one note.");
+  await expect(page.locator("#notes-error")).toHaveText("Add at least one message.");
 
   await page.getByLabel("Their name").fill("Alex");
   await page.getByLabel("Your name").fill("Sam");
-  await page.getByPlaceholder("Write your own note…").fill("You are my favorite human");
+  await page.getByPlaceholder("Write your own message…").fill("You are my favorite human");
   await page.keyboard.press("Enter");
   await page.getByRole("button", { name: "I love you", exact: true }).click();
   await page.getByRole("button", { name: "Create link" }).click();

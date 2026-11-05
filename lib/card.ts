@@ -57,25 +57,25 @@ export function validateCard(
 
   const seen = new Set<string>();
   const notesClean: string[] = [];
-  if (!Array.isArray(notes)) errors.notes = "Add at least one note.";
+  if (!Array.isArray(notes)) errors.notes = "Add at least one message.";
   else {
     for (const note of notes) {
       if (typeof note !== "string") {
-        errors.notes = "One of the notes isn't valid.";
+        errors.notes = "One of the messages isn't valid.";
         break;
       }
       const text = clean(note);
       if (!text || seen.has(text)) continue;
       if (text.length > LIMITS.note) {
-        errors.notes = `Each note can be up to ${LIMITS.note} characters.`;
+        errors.notes = `Each message can be up to ${LIMITS.note} characters.`;
         break;
       }
       seen.add(text);
       notesClean.push(text);
     }
-    if (!errors.notes && notesClean.length < LIMITS.minNotes) errors.notes = "Add at least one note.";
+    if (!errors.notes && notesClean.length < LIMITS.minNotes) errors.notes = "Add at least one message.";
     if (!errors.notes && notesClean.length > LIMITS.maxNotes) {
-      errors.notes = `A cat can hold up to ${LIMITS.maxNotes} notes.`;
+      errors.notes = `A cat can hold up to ${LIMITS.maxNotes} messages.`;
     }
   }
 

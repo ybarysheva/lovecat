@@ -79,11 +79,11 @@ export default function Builder() {
     const text = clean(writing);
     if (!text) return;
     if (text.length > LIMITS.note) {
-      setFieldErrors((f) => ({ ...f, write: `Each note can be up to ${LIMITS.note} characters.` }));
+      setFieldErrors((f) => ({ ...f, write: `Each message can be up to ${LIMITS.note} characters.` }));
       return;
     }
     if (full) {
-      setFieldErrors((f) => ({ ...f, write: `A cat can hold up to ${LIMITS.maxNotes} notes.` }));
+      setFieldErrors((f) => ({ ...f, write: `A cat can hold up to ${LIMITS.maxNotes} messages.` }));
       return;
     }
     if (!has(text)) update({ notes: [...draft.notes, text] });
@@ -98,7 +98,7 @@ export default function Builder() {
 
   const openPreview = () => {
     if (draft.notes.length === 0) {
-      showFieldErrors({ notes: "Add at least one note to preview the cat." });
+      showFieldErrors({ notes: "Add at least one message to preview the cat." });
       return;
     }
     setPreview(true);
@@ -204,7 +204,7 @@ export default function Builder() {
           aria-describedby={fieldErrors.notes ? "notes-error" : undefined}
         >
           <h2>
-            Your notes{" "}
+            Your messages{" "}
             <span className="count">
               ({draft.notes.length}/{LIMITS.maxNotes})
             </span>
@@ -217,7 +217,7 @@ export default function Builder() {
             }}
           >
             <label className="sr-only" htmlFor="write">
-              Write a note
+              Write a message
             </label>
             <textarea
               id="write"
@@ -237,7 +237,7 @@ export default function Builder() {
               }}
               maxLength={LIMITS.note}
               rows={2}
-              placeholder="Write your own note…"
+              placeholder="Write your own message…"
             />
             <button type="submit" className="btn" disabled={!clean(writing) || full}>
               Add
@@ -260,7 +260,7 @@ export default function Builder() {
           )}
 
           {draft.notes.length === 0 ? (
-            <p className="empty">No notes yet. Write one above or pick some below.</p>
+            <p className="empty">No messages yet. Write one above or pick some below.</p>
           ) : (
             <ul className="my-notes">
               {draft.notes.map((note) => (
