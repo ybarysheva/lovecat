@@ -5,7 +5,7 @@
 // swaying gently (a wave running toward the tip, like the tail); the swag is still.
 // Drawn as SVG in the cat's ink; leaves are filled with a 1px ordered-dither pattern.
 
-import { ditherInk, fadedInk, hex, INK_HEX as INK, PAPER_HEX as PAPER, seededRandom } from "@/lib/palette";
+import { ditherInk, fadedInk, hex, PAPER_HEX as PAPER, seededRandom } from "@/lib/palette";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 // The leaves' dotted fill is printed in a lighter ink (outlines and vines stay full ink).
@@ -59,7 +59,7 @@ const STRANDS: StrandSpec[] = [
 const TOP = -6; // strands hang from just above the top edge
 const STRAND = { amplitude: 4, swayFrom: 0.55, leafEvery: 17 * K, segment: 6 }; // degrees, fraction, px, px
 
-const LEAF = { min: 8 * K, max: 18 * K, stroke: 0.75 }; // outline width: thin, so leaves read light
+const LEAF = { min: 8 * K, max: 18 * K }; // leaf length range, px
 
 /**
  * A pothos-style heart leaf pointing along +x, its base at (x0, 0), `size` px long.
@@ -177,6 +177,7 @@ const pathOf = (pts: Point[]) => pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixe
 export function createVines(svg: SVGSVGElement, idPrefix: string) {
   const lit = `${idPrefix}-leaf-lit`;
   const shade = `${idPrefix}-leaf-shade`;
+  const stemFill = `${idPrefix}-stem`;
   let width = 0;
   let catLeft = 0;
   let swagPts = swagSpine(); // the swag doesn't move, so its shape is worked out per layout
@@ -206,18 +207,15 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
       el("path", {
         d: `M0 0 Q ${(stalk * 0.5).toFixed(1)} ${curl.toFixed(1)} ${stalk.toFixed(1)} 0`,
         fill: "none",
-        stroke: INK,
-        "stroke-width": 1,
+        stroke: `url(#${stemFill})`,
+        "stroke-width": 1.6,
         "stroke-linecap": "round",
       }),
     );
     g.appendChild(
       el("path", {
         d: leafPath(stalk - 0.5, size, wide, lopsided, bend),
-        fill: `url(#${rnd() < 0.55 ? lit : shade})`,
-        stroke: INK,
-        "stroke-width": LEAF.stroke,
-        "stroke-linejoin": "round",
+        fill: `url(#${rnd() < 0.55 ? lit : shade})`, // no outline: the dots alone make the leaf
       }),
     );
     // Center vein in paper, following the tip's bend.
@@ -252,8 +250,8 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     const group = el("g", {});
     const stem = el("path", {
       fill: "none",
-      stroke: INK,
-      "stroke-width": 1.4,
+      stroke: `url(#${stemFill})`, // dithered like the leaves, a little denser so it reads as a line
+      "stroke-width": 2.2,
       "stroke-linecap": "round",
       "stroke-linejoin": "round",
     });
@@ -299,6 +297,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     const defs = el("defs", {});
     defs.appendChild(ditherPattern(lit, 0.42));
     defs.appendChild(ditherPattern(shade, 0.72));
+    defs.appendChild(ditherPattern(stemFill, 0.82));
     svg.appendChild(defs);
     // Hanging strands first, so the swag's leaves sit over the top of them.
     // The swag doesn't move, so where it bottoms out is fixed.

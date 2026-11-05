@@ -1,9 +1,6 @@
 import Link from "next/link";
 import Cat from "@/components/cat/Cat";
-import { STARTER_NOTES } from "@/lib/starter-notes";
-
-// Placeholder: the demo cat says the builder's starter notes until it has its own.
-const DEMO_NOTES = STARTER_NOTES.flatMap((g) => g.notes);
+import { DEMO_NOTES } from "@/lib/starter-notes";
 
 // The landing page is a working cat, so people see how it feels before making one.
 export default function Home() {

@@ -39,3 +39,16 @@ export const STARTER_NOTES: { group: string; notes: string[] }[] = [
     ],
   },
 ];
+
+// What the demo cat on the home page says: light, general messages, since whoever sees it
+// hasn't been sent anything yet.
+export const DEMO_NOTES: string[] = [
+  "Meow (translation: you're the best)",
+  "You have excellent taste in cats",
+  "Drink some water",
+  "One thing at a time",
+  "You are doing better than you think",
+  "You make ordinary days better",
+  "Thanks for everything you do",
+  "Have a lovely day",
+];
