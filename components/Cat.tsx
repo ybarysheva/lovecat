@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
+import { drawSunbeam } from "./sunbeam";
 import { TAIL_SWISH, tailPath } from "./tail";
 import "./cat.css";
 
@@ -30,6 +31,8 @@ export default function Cat({ to, from, notes, footer }: Props) {
 
   return (
     <div ref={rootRef} className="cat-scene">
+      {/* Background: the room and its sunbeam, drawn in startCat (components/sunbeam.ts). */}
+      <canvas className="cat-bg" aria-hidden="true"></canvas>
       {/* LASER POINTER — fixed top-right, below treat bag */}
       <div className="laser-btn" data-laser role="button" aria-label="Play with the laser pointer">
         <div className="laser-body"></div>
@@ -738,6 +741,28 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     tailFrame = requestAnimationFrame(swish);
   });
 
+  // ---- BACKGROUND ----
+  // Redrawn whenever the scene changes size, lined up with the cat's resting position.
+  const bgCanvas = root.querySelector<HTMLCanvasElement>(".cat-bg")!;
+  const catHover = $(".cat-hover");
+  let bgTimer: ReturnType<typeof setTimeout> | null = null;
+  function drawBackground() {
+    const scene = root.getBoundingClientRect();
+    const cat = catHover.getBoundingClientRect();
+    drawSunbeam(bgCanvas, scene.width, scene.height, {
+      left: cat.left - scene.left,
+      top: cat.top - scene.top,
+      scale: cat.width / 300,
+    });
+  }
+  const bgObserver = new ResizeObserver(() => {
+    cancel(bgTimer);
+    bgTimer = later(drawBackground, 60);
+  });
+  bgObserver.observe(root);
+  drawBackground();
+  document.fonts?.ready.then(() => !disposed && drawBackground()).catch(() => {});
+
   // ---- EVENTS ----
   const onDocClick = (e: MouseEvent) => {
     const target = e.target as Element | null;
@@ -756,6 +781,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   return () => {
     disposed = true;
     cancelAnimationFrame(tailFrame);
+    bgObserver.disconnect();
     timers.forEach(clearTimeout);
     timers.clear();
     audio.forEach((ctx) => ctx.close().catch(() => {}));
