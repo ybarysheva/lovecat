@@ -6,6 +6,10 @@
 
 const INK = [0x1c, 0x14, 0x10] as const;
 const PAPER = [0xd4, 0xc5, 0xa9] as const;
+// The wallpaper's dots are printed in a faded ink, so the pattern reads light without
+// losing any dots. MOTIF_FADE is how far toward the paper color (0 = full ink, 1 = paper).
+const MOTIF_FADE = 0.6;
+const MOTIF_INK = INK.map((c, i) => Math.round(c + (PAPER[i] - c) * MOTIF_FADE)) as unknown as typeof INK;
 
 const BAYER8 = [
   [0, 32, 8, 40, 2, 34, 10, 42],
@@ -49,8 +53,8 @@ const WALLPAPER = {
 };
 // How much ink, 0 (paper) to 1 (solid).
 const TONE = {
-  motif: 0.26, // wallpaper is printed at about a quarter density, so it stays light
-  fishLine: 0.4, // fish bone lines are dotted, so they're about as light as the paws
+  motif: 0.32, // how dense the paw prints' dots are
+  fishLine: 0.5, // how dense the fish bone lines' dots are
   floor: 0.05, // the boards themselves: nearly clean
 };
 // The corner fades out toward the sides: full near the cat, gone by `fadeTo` from its center.
@@ -217,6 +221,7 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
       const isLine = motifs[i] > 127; // red: fish bone lines
       const threshold = (row[x & 7] + 0.5) / 64;
       let ink = isLine ? motif > 110 && TONE.fishLine > threshold : motif > 127 && TONE.motif > threshold;
+      const wallpaperDot = ink;
       if (!ink && y >= baseTop) {
         const side = 1 - smoothstep(FADE.from * s, FADE.to * s, Math.abs(x + 0.5 - cx));
         let tone = 0;
@@ -253,7 +258,7 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
         }
         ink = tone * side > (row[x & 7] + 0.5) / 64;
       }
-      const c = ink ? INK : PAPER;
+      const c = ink ? (wallpaperDot ? MOTIF_INK : INK) : PAPER;
       d[i] = c[0];
       d[i + 1] = c[1];
       d[i + 2] = c[2];
