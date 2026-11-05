@@ -292,11 +292,6 @@ export default function Builder() {
               ({draft.notes.length}/{LIMITS.maxNotes})
             </span>
           </h2>
-          {fieldErrors.notes && (
-            <p className="field-error panel-error" id="notes-error" role="alert">
-              {fieldErrors.notes}
-            </p>
-          )}
           <form
             className="write-row"
             onSubmit={(e) => {
@@ -331,6 +326,11 @@ export default function Builder() {
               Add
             </button>
           </form>
+          {fieldErrors.notes && (
+            <p className="field-error" id="notes-error" role="alert">
+              {fieldErrors.notes}
+            </p>
+          )}
           {fieldErrors.write && (
             <p className="field-error" id="write-error">
               {fieldErrors.write}

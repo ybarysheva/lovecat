@@ -92,7 +92,6 @@ textarea.input { resize: vertical; min-height: 76px; }
 .input.invalid:focus-visible { outline-color: var(--error); }
 .panel.invalid { border-color: var(--error); }
 .field-error { display: block; color: var(--error); font-size: 0.82rem; margin-top: 6px; }
-.panel-error { margin: -4px 0 12px; }
 
 .write-row { display: flex; gap: 8px; align-items: flex-start; }
 .write-row .input { flex: 1; }
