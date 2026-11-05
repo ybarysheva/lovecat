@@ -4,6 +4,7 @@
 import { getKV } from "./kv";
 import { CAT_EVENTS, MAX_PER_REPORT, PLACES, today, type CatEvent, type Counts, type Place } from "./stats";
 
+const SINCE_KEY = "stats:since"; // the first day anything was counted
 const totalKey = (event: string, place: string) => `stats:total:${event}:${place}`;
 const dayKey = (date: string, event: string, place: string) => `stats:day:${date}:${event}:${place}`;
 
@@ -16,22 +17,38 @@ export async function recordCatEvents(place: Place, counts: Counts) {
     if (n <= 0) continue;
     changes.push([totalKey(event, place), n], [dayKey(date, event, place), n]);
   }
+  if (changes.length === 0) return;
   await getKV().incrMany(changes);
+  await markStarted(date);
+}
+
+/** Remembers the first day of counting (only the first call ever sets it). */
+let started = false; // per server instance, to skip the call once it's done
+async function markStarted(date: string) {
+  if (started) return;
+  await getKV().setIfAbsent(SINCE_KEY, date);
+  started = true;
 }
 
 /** Counts one cat created in the builder. */
 export async function recordCreated() {
+  const date = today();
   await getKV().incrMany([
     [totalKey("created", "builder"), 1],
-    [dayKey(today(), "created", "builder"), 1],
+    [dayKey(date, "created", "builder"), 1],
   ]);
+  await markStarted(date);
 }
 
 export type StatsRow = { label: string; total: number; days: number[] };
 
-/** Totals and the last `days` days for every counter, newest day first. */
+/** Totals and each day's counts for every counter, newest day first: the last `days` days,
+ *  or fewer if counting started more recently. */
 export async function readStats(days = 14) {
-  const dates = Array.from({ length: days }, (_, i) => today(new Date(Date.now() - i * 86_400_000)));
+  const since = (await getKV().get(SINCE_KEY)) ?? today();
+  const dates = Array.from({ length: days }, (_, i) => today(new Date(Date.now() - i * 86_400_000))).filter(
+    (d) => d >= since,
+  );
   const series: { label: string; event: string; place: string }[] = [
     { label: "Cats created", event: "created", place: "builder" },
     ...PLACES.flatMap((place) =>

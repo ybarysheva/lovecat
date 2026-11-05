@@ -27,7 +27,8 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
     <main className="builder stats">
       <h1>Stats</h1>
       <p className="lede">
-        All-time totals and the last 14 days (UTC). Visits and traffic sources are in Vercel Analytics.
+        All-time totals and each day (UTC), newest first, up to 14 days. Visits and traffic sources are in Vercel
+        Analytics.
       </p>
       <div className="stats-table">
         <table>

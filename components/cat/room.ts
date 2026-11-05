@@ -45,8 +45,9 @@ const TONE = {
   fishLine: 0.5, // how dense the fish bone lines' dots are
   floor: 0.05, // the boards themselves: nearly clean
 };
-// The corner fades out toward the sides: full near the cat, gone by `fadeTo` from its center.
-const FADE = { from: 200, to: 620 };
+// Fading out toward the sides: full near the cat, gone by `to` from its center. `room` fades
+// the baseboard and floor; `wall` fades the wallpaper too.
+const FADE = { from: 200, to: 620, room: true, wall: false };
 // Hardwood strip flooring, as in a prewar Brooklyn apartment: narrow boards running away
 // from the wall, drawn in perspective (seams fan out toward you from a vanishing point
 // above the floor line), with staggered joints where boards end. In the cat's units.
@@ -196,17 +197,21 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
       const i = (y * w + x) * 4;
       const motif = motifs[i + 3];
       const isLine = motifs[i] > 127; // red: fish bone lines
-      let ink = isLine ? motif > 110 && ditherInk(TONE.fishLine, x, y) : motif > 127 && ditherInk(TONE.motif, x, y);
+      const side = 1 - smoothstep(FADE.from * s, FADE.to * s, Math.abs(x + 0.5 - cx));
+      const wallFade = FADE.wall ? side : 1;
+      let ink = isLine
+        ? motif > 110 && ditherInk(TONE.fishLine * wallFade, x, y)
+        : motif > 127 && ditherInk(TONE.motif * wallFade, x, y);
       const wallpaperDot = ink;
       if (!ink && y >= baseTop) {
-        const side = 1 - smoothstep(FADE.from * s, FADE.to * s, Math.abs(x + 0.5 - cx));
+        const roomFade = FADE.room ? side : 1;
         let tone = 0;
         if (y < floorY) {
           const band = baseRows[Math.floor(y - baseTop)];
           if (band?.line) {
             // Thin lines use an even dot spacing along the row (the 2D pattern's rows vary
             // in density, so the same line could come out light on one screen, dark on another).
-            ink = band.ink * side > (LINE_DOTS[x & 7] + 0.5) / 8;
+            ink = band.ink * roomFade > (LINE_DOTS[x & 7] + 0.5) / 8;
             const c = ink ? INK : PAPER;
             d[i] = c[0];
             d[i + 1] = c[1];
@@ -235,7 +240,7 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
           );
           tone += BED_SHADOW.ink * (1 - smoothstep(0.35, 1, sd));
         }
-        ink = ditherInk(tone * side, x, y);
+        ink = ditherInk(tone * roomFade, x, y);
       }
       const c = ink ? (wallpaperDot ? MOTIF_INK : INK) : PAPER;
       d[i] = c[0];
