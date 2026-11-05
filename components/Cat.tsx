@@ -134,14 +134,6 @@ export default function Cat({ to, from, notes, footer }: Props) {
   );
 }
 
-type AudioCtor = typeof AudioContext;
-
-function newAudioContext(): AudioContext {
-  const Ctor: AudioCtor =
-    window.AudioContext || (window as unknown as { webkitAudioContext: AudioCtor }).webkitAudioContext;
-  return new Ctor();
-}
-
 /** Wires up the cat inside `root`. Returns a cleanup function. */
 function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
@@ -177,14 +169,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     clearTimeout(t);
     timers.delete(t);
   };
-  const audio = new Set<AudioContext>();
-  const closeAudioLater = (ctx: AudioContext, ms: number) => {
-    audio.add(ctx);
-    setTimeout(() => {
-      audio.delete(ctx);
-      ctx.close().catch(() => {});
-    }, ms);
-  };
+
 
   // ---- NOTES: shuffle-bag, depleted before refilling ----
   let queue: string[] = [];
@@ -234,78 +219,11 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   }
 
   function handlePet() {
-    playMew();
     squish.classList.remove("squishing");
     void squish.offsetWidth;
     squish.classList.add("squishing");
     squish.addEventListener("animationend", () => squish.classList.remove("squishing"), { once: true });
     showBubble(nextNote());
-  }
-
-  function playMew() {
-    try {
-      const ctx = newAudioContext();
-      const osc = ctx.createOscillator();
-      // Pre-filter tames the harshest highs before formant shaping
-      const precut = ctx.createBiquadFilter();
-      // Two formant filters: F1 (low vowel resonance) + F2 (high vowel resonance)
-      const f1 = ctx.createBiquadFilter();
-      const f2 = ctx.createBiquadFilter();
-      const gain = ctx.createGain();
-      // Natural cat-voice wobble
-      const vib = ctx.createOscillator();
-      const vibG = ctx.createGain();
-
-      osc.type = "sawtooth"; // harmonics needed for formants to work
-      precut.type = "lowpass";
-      precut.frequency.value = 5000; // cut only the very harsh top
-      f1.type = "bandpass";
-      f1.Q.value = 10; // narrow, resonant
-      f2.type = "bandpass";
-      f2.Q.value = 8;
-      vib.type = "sine";
-      vib.frequency.value = 7;
-      vibG.gain.value = 15;
-
-      vib.connect(vibG);
-      vibG.connect(osc.frequency);
-      osc.connect(precut);
-      precut.connect(f1);
-      precut.connect(f2);
-      f1.connect(gain);
-      f2.connect(gain);
-      gain.connect(ctx.destination);
-
-      const t = ctx.currentTime;
-
-      // Fundamental pitch arc: rise to "ee", brief hold, fall to "ow"
-      osc.frequency.setValueAtTime(390, t);
-      osc.frequency.linearRampToValueAtTime(640, t + 0.16);
-      osc.frequency.linearRampToValueAtTime(660, t + 0.28);
-      osc.frequency.exponentialRampToValueAtTime(330, t + 0.58);
-
-      // F1: "ee" resonance (~380 Hz) → "ow" resonance (~700 Hz)
-      f1.frequency.setValueAtTime(380, t);
-      f1.frequency.linearRampToValueAtTime(380, t + 0.24);
-      f1.frequency.linearRampToValueAtTime(700, t + 0.54);
-
-      // F2: "ee" resonance (~3200 Hz) → "ow" resonance (~1100 Hz)
-      f2.frequency.setValueAtTime(3200, t);
-      f2.frequency.linearRampToValueAtTime(3200, t + 0.24);
-      f2.frequency.linearRampToValueAtTime(1100, t + 0.54);
-
-      // Amplitude envelope
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.18, t + 0.07);
-      gain.gain.setValueAtTime(0.18, t + 0.38);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.62);
-
-      osc.start(t);
-      vib.start(t);
-      osc.stop(t + 0.64);
-      vib.stop(t + 0.64);
-      closeAudioLater(ctx, 1100);
-    } catch {}
   }
 
   // ---- TREAT BAG ----
@@ -364,7 +282,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   // ---- HAPPY / PURR STATE ----
   let happyStateTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  /** The treat reward: eyes squint shut, body purr-vibrates, purr sound, for 4s.
+  /** The treat reward: eyes squint shut and the body purr-vibrates, for 4s.
    *  The laser catch uses it too, with stars instead of hearts. */
   function startHappyState(hearts = true) {
     // If already in happy state, restart it cleanly
@@ -384,7 +302,6 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     cssCat.classList.add("cat-purring");
 
     if (hearts) spawnHeartWaves(cssCat.getBoundingClientRect());
-    playPurr(3800);
 
     happyStateTimeout = later(() => {
       endHappyState();
@@ -455,45 +372,6 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
       )
       .finished.then(() => heart.remove())
       .catch(() => heart.remove());
-  }
-
-  function playPurr(duration: number) {
-    try {
-      const ctx = newAudioContext();
-      const osc = ctx.createOscillator();
-      const filter = ctx.createBiquadFilter();
-      const env = ctx.createGain();
-      const lfo = ctx.createOscillator();
-      const lfoGain = ctx.createGain();
-
-      osc.type = "sawtooth";
-      osc.frequency.value = 38; // low rumble fundamental
-      filter.type = "lowpass";
-      filter.frequency.value = 380; // keep it warm, cut harsh highs
-      filter.Q.value = 1.0;
-      lfo.type = "sine";
-      lfo.frequency.value = 26; // purr rhythm ~26 Hz
-      lfoGain.gain.value = 0.035;
-
-      osc.connect(filter);
-      filter.connect(env);
-      env.connect(ctx.destination);
-      lfo.connect(lfoGain);
-      lfoGain.connect(env.gain);
-
-      const t = ctx.currentTime;
-      const dur = duration / 1000;
-      env.gain.setValueAtTime(0, t);
-      env.gain.linearRampToValueAtTime(0.08, t + 0.45); // fade in
-      env.gain.setValueAtTime(0.08, t + dur - 0.55);
-      env.gain.linearRampToValueAtTime(0, t + dur); // fade out
-
-      osc.start(t);
-      lfo.start(t);
-      osc.stop(t + dur);
-      lfo.stop(t + dur);
-      closeAudioLater(ctx, duration + 600);
-    } catch {}
   }
 
   // ---- LASER POINTER ----
@@ -821,7 +699,6 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     bgObserver.disconnect();
     timers.forEach(clearTimeout);
     timers.clear();
-    audio.forEach((ctx) => ctx.close().catch(() => {}));
     squish.removeEventListener("click", handlePet);
     treatBag.removeEventListener("click", throwTreat);
     laserBtn.removeEventListener("click", onLaserClick);

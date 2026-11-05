@@ -4,7 +4,7 @@ Send someone a little cat that tells them nice things when they pet it.
 
 - `/` is a demo cat, so visitors can pet it and see how it works first. For now it says the starter notes (set in `app/page.tsx`). A **send someone a cat** button at the bottom goes to the builder.
 - `/make` is the builder. The sender enters the recipient's name (and optionally their own), writes notes or picks from a starter list, previews the cat, and taps **Create link**. Their draft is kept in the browser until the link is made.
-- `/c/<id>` is a sent cat. Pet it for a note (shuffled, no repeats until every note has been shown), throw it a treat, or play with the laser pointer: tap it to turn it on, then move the mouse or drag a finger and the cat's eyes and head follow the dot (fast moves make it swipe). After 5 swipes, moving the dot near its front paws makes it pounce and catch the dot: stars burst, it closes its eyes, purrs and vibrates like after a treat, and the laser turns off. Tapping the laser again turns it off early, without the catch. Under the usual `[ pet the cat to receive love ]` it says `a message from <sender> for <recipient>` (or just `for <recipient>` when there is no sender name).
+- `/c/<id>` is a sent cat. Pet it for a note (shuffled, no repeats until every note has been shown), throw it a treat, or play with the laser pointer: tap it to turn it on, then move the mouse or drag a finger and the cat's eyes and head follow the dot (fast moves make it swipe). After 5 swipes, moving the dot near its front paws makes it pounce and catch the dot: stars burst, it closes its eyes and purr-vibrates like after a treat, and the laser turns off. Tapping the laser again turns it off early, without the catch. Under the usual `[ pet the cat to receive love ]` it says `a message from <sender> for <recipient>` (or just `for <recipient>` when there is no sender name).
 - Pasting a cat link in a chat shows a preview: "A cat for <name>".
 
 The cat is ported from the original single-page lil cat ([ybarysheva/love](https://github.com/ybarysheva/love)).
@@ -41,7 +41,7 @@ On Vercel, if the Redis env vars are missing, creating a cat returns a clear "St
 
 ## Where things are
 
-- `components/Cat.tsx` and `components/cat.css`: the cat (markup, behaviour, sounds).
+- `components/Cat.tsx` and `components/cat.css`: the cat (markup and behaviour).
 - `scripts/dither-textures.mjs` and `public/tex/`: the shaded 1-bit textures for the cat, treat bag and laser pointer (Obra Dinn-style: each part lit from the upper left and ordered-dithered into ink and paper). After changing a part's size or position in `cat.css`, run `npm run textures` to regenerate them.
 - `components/room.ts`: the background: light wallpaper of paw prints and fish-bone skeletons, a prewar Brooklyn-style baseboard, and hardwood strip flooring in gentle perspective, all in fine light dither, fading out toward the sides. Lined up with the cat on any screen.
 - `components/vines.ts`: pothos vines: an evenly leaved, rounded swag across the top-left corner with a long strand trailing from its lowest point, and a short strand further right. Only the ends of the two strands move, gently.
