@@ -214,7 +214,6 @@ textarea.input { resize: vertical; min-height: 76px; }
   font-size: 0.85rem;
 }
 
-.fineprint { margin-top: 28px; font-size: 0.75rem; color: var(--ink-soft); }
 
 /* Full-screen preview of the cat */
 .preview { position: fixed; inset: 0; z-index: 50; overflow: auto; overscroll-behavior: contain; }

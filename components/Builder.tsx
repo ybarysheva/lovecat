@@ -384,10 +384,6 @@ export default function Builder() {
           ))}
         </section>
 
-        <p className="fineprint">
-          Your cat is saved so the link works. Anyone with the link can see it, so don&apos;t put anything in a note
-          you wouldn&apos;t want forwarded.
-        </p>
       </main>
 
       <div className="actions">
