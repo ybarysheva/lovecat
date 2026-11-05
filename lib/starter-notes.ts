@@ -33,7 +33,6 @@ export const STARTER_NOTES: { group: string; notes: string[] }[] = [
     group: "Playful",
     notes: [
       "The cat and I agree: you are our favorite person",
-      "This cat was paid in treats to tell you you're great",
       "Meow (translation: you're wonderful)",
       "You have excellent taste in cats",
       "You're the best physically, mentally, emotionally, philosophically, etc",
