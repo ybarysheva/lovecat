@@ -37,7 +37,7 @@ type StrandSpec = {
   periodMs: number;
   phase: number;
   seed: number;
-  // Comes down from the top edge to the swag's lowest point, then hangs on from there, so it
+  // Comes down from the top edge to a point on the swag, then hangs on from there, so it
   // reads as one vine crossing the swag. `length` is the part below the swag.
   throughSwag?: boolean;
   bare?: number; // px either side of where it crosses the swag with no leaves (no clump)
@@ -150,10 +150,10 @@ function swagSpine(shift = 0): Point[] {
   return pts;
 }
 
-/** The swag's lowest point, where the long strand hangs from. */
-function lowest(pts: Point[]): Point {
-  return pts.reduce((low, p) => (p.y > low.y ? p : low), pts[0]);
-}
+/** Where the long strand crosses the swag: a bit left of its lowest point, so it doesn't
+ *  hang dead centre. A fraction of the way along the swag, from its left end. */
+const STRAND_CROSSES_AT = 0.3;
+const crossing = (pts: Point[]): Point => pts[Math.round((pts.length - 1) * STRAND_CROSSES_AT)];
 
 /** The point (and direction) at arc length `at` along a spine. */
 function along(pts: Point[], at: number): Point | null {
@@ -180,7 +180,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
   let width = 0;
   let catLeft = 0;
   let swagPts = swagSpine(); // the swag doesn't move, so its shape is worked out per layout
-  let low = lowest(swagPts);
+  let cross = crossing(swagPts);
   let swag: Strand | null = null;
   let strands: { strand: Strand; spec: StrandSpec }[] = [];
 
@@ -292,9 +292,9 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     catLeft = catX;
     // Slide the swag (and the strand trailing from it) halfway from its corner toward the
     // cat; on phones the cat is already close, so it stays in the corner.
-    const shift = Math.max(0, (catX - lowest(swagSpine()).x) / 2);
+    const shift = Math.max(0, (catX - crossing(swagSpine()).x) / 2);
     swagPts = swagSpine(shift);
-    low = lowest(swagPts);
+    cross = crossing(swagPts);
     while (svg.firstChild) svg.removeChild(svg.firstChild);
     const defs = el("defs", {});
     defs.appendChild(ditherPattern(lit, 0.42));
@@ -302,7 +302,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     svg.appendChild(defs);
     // Hanging strands first, so the swag's leaves sit over the top of them.
     // The swag doesn't move, so where it bottoms out is fixed.
-    const crossAt = low.y - TOP; // length of a strand's part above the swag
+    const crossAt = cross.y - TOP; // length of a strand's part above the swag
     strands = STRANDS.map((spec) => ({
       spec,
       strand: spec.throughSwag
@@ -342,12 +342,12 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     if (!swag) return;
     for (const { strand, spec } of strands) {
       if (spec.throughSwag) {
-        // Straight down from the top edge to the swag's lowest point, then hanging on below it.
+        // Straight down from the top edge to where it crosses the swag, then hanging on below.
         const above: Point[] = [];
-        const steps = Math.max(1, Math.round((low.y - TOP) / STRAND.segment));
+        const steps = Math.max(1, Math.round((cross.y - TOP) / STRAND.segment));
         for (let i = 0; i < steps; i++)
-          above.push({ x: low.x, y: TOP + ((low.y - TOP) * i) / steps, angle: Math.PI / 2 });
-        place(strand, [...above, ...hangingSpine(low.x, low.y, spec, t)]);
+          above.push({ x: cross.x, y: TOP + ((cross.y - TOP) * i) / steps, angle: Math.PI / 2 });
+        place(strand, [...above, ...hangingSpine(cross.x, cross.y, spec, t)]);
       } else {
         place(strand, hangingSpine(spec.from?.(width) ?? 0, TOP, spec, t));
       }
