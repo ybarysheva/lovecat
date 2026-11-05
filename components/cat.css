@@ -215,22 +215,26 @@
 .cat-paw--r.pouncing { animation: pounceR 0.55s ease-in-out; }
 
 /* ---- LABEL ---- */
+/* The label and "from" line sit on the floor's dither, so each gets a plain paper
+   underlay. Their softer ink is a solid color (not opacity) so the underlay stays solid. */
 .cat-label {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.82rem;
-  color: #1C1410;
+  color: #53493E; /* ink at 70% on paper */
+  background: #D4C5A9;
+  padding: 3px 8px;
   letter-spacing: 0.06em;
   margin-top: 14px;
   text-align: center;
-  opacity: 0.7;
 }
 .cat-from {
   font-size: 0.72rem;
-  color: #1C1410;
+  color: #6F6455; /* ink at 55% on paper */
+  background: #D4C5A9;
+  padding: 2px 8px;
   letter-spacing: 0.06em;
-  margin-top: 6px;
+  margin-top: 4px;
   text-align: center;
-  opacity: 0.55;
 }
 
 /* "make your own" link: bottom of the viewport, or below the cat when the page
