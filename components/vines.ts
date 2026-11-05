@@ -26,7 +26,7 @@ const SWAG = {
   start: { x: -10, y: 38 },
   dip: { x: 97, y: 148 }, // curve control point (the curve itself bottoms out around y 82)
   end: { x: 128, y: -6 },
-  breathe: 0.06, // the dip deepens and lifts by this fraction
+  breathe: 0, // the swag stays still (set above 0 to let the dip rise and fall)
   periodMs: 7000,
   leafEvery: 17,
 };
@@ -46,7 +46,9 @@ const STRANDS: StrandSpec[] = [
   { from: () => 84, length: 265, lean: 2, wander: 11, periodMs: 5600, phase: 0, seed: 11 },
   { from: (w) => Math.min(w * 0.7, w - 95), length: 105, lean: -3, wander: 9, periodMs: 4700, phase: 2.1, seed: 29 },
 ];
-const STRAND = { amplitude: 5, leafEvery: 17, segment: 6 }; // degrees at the tip, px, px
+// Only the lower ends of the strands move: the sway fades in over the last `swayFrom` of
+// their length, up to `amplitude` degrees at the tip.
+const STRAND = { amplitude: 4, swayFrom: 0.55, leafEvery: 17, segment: 6 }; // degrees, fraction, px, px
 
 const LEAF = { min: 8, max: 18, stroke: 1.1 };
 
@@ -109,7 +111,8 @@ function hangingSpine(x: number, y: number, spec: StrandSpec, t: number): Point[
   for (let i = 0; i <= n; i++) {
     const s = i / n;
     const wander = spec.wander * Math.sin(s * Math.PI * 2.6 + spec.seed) * Math.min(1, s * 4);
-    const sway = STRAND.amplitude * Math.pow(s, 0.9) * Math.sin(phase - 2.2 * s);
+    const end = Math.max(0, (s - (1 - STRAND.swayFrom)) / STRAND.swayFrom); // 0 until the lower part, 1 at the tip
+    const sway = STRAND.amplitude * end * end * Math.sin(phase - 1.2 * s);
     const a = ((90 + spec.lean + wander + sway) * Math.PI) / 180;
     pts.push({ x, y, angle: a });
     x += Math.cos(a) * STRAND.segment;
