@@ -64,12 +64,17 @@ On Vercel, if the Redis env vars are missing, creating a cat returns a clear "St
 - `lib/starter-notes.ts`: the notes senders can pick from.
 - `app/page.tsx`: the landing page (demo cat). `app/make/page.tsx`: the builder.
 - `lib/card.ts`: the shape of a cat and its limits (name 40 characters, up to 50 notes of 200 characters), shared by the builder and the API.
-- `app/api/cards/route.ts`: creates a cat (rate limit, validation, save).
+- `app/api/cards/route.ts`: creates a cat (rate limit, validation, save). `app/api/stats/route.ts` receives the counts; `lib/stats.ts` and `lib/stats-store.ts` define and store them; `components/cat/track.ts` sends them in batches; `app/stats/page.tsx` shows them.
 - `app/c/[id]/`: the cat page and its link-preview image.
+
+## Analytics
+
+- **Traffic** (visits, where people came from, countries, devices) is in **Vercel Analytics**: the project's Analytics tab. Visits from links opened in chat apps (iMessage, WhatsApp…) show as "direct", since those apps don't say where a link came from. To track a post, add a tag to the link you share, e.g. `?utm_source=instagram`.
+- **What people do with cats** is counted in our own database and shown at `/stats?key=<STATS_KEY>` (set `STATS_KEY` in the Vercel project's environment variables; without it the page is a 404). Counted: cats created; cat links opened; pets, treats, laser turned on, laser catches, and taps on "send someone a cat", split between the demo cat and sent cats. The builder's preview isn't counted. Only numbers are stored, never names or messages.
 
 ## Data
 
-Each cat is one Redis key, `cat:<id>`, holding JSON: `{ id, to, from, notes, createdAt }`. Cats don't expire and can't be edited; making changes means making a new cat.
+Each cat is one Redis key, `cat:<id>`, holding JSON: `{ id, to, from, notes, createdAt }`. Counters are `stats:total:<event>:<where>` and `stats:day:<yyyy-mm-dd>:<event>:<where>`; rate-limit counters are short-lived `rl:…` keys. Cats don't expire and can't be edited; making changes means making a new cat.
 
 ## Ideas for later
 

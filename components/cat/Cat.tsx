@@ -8,6 +8,8 @@ import { createLaser } from "./laser";
 import { drawRoom } from "./room";
 import { TAIL_SWISH, tailPath } from "./tail";
 import { createTimers, replay, type Timer } from "./timers";
+import { createTracker } from "./track";
+import type { Place } from "@/lib/stats";
 import { createTreat } from "./treat";
 import { createVines } from "./vines";
 import "./cat.css";
@@ -19,12 +21,14 @@ type Props = {
   notes: string[];
   /** Shown at the bottom of the scene: "send someone a cat" on a cat page, "back to editing" in preview. */
   footer?: React.ReactNode;
+  /** Count what people do with this cat, and where (left out for the builder's preview). */
+  track?: Place;
 };
 
 // The cat and its room. The markup is JSX; the behaviour is plain DOM code (one module per
 // part, wired together in startCat), scoped to this component's root and cleaned up on
 // unmount.
-export default function Cat({ to, from, notes, footer }: Props) {
+export default function Cat({ to, from, notes, footer, track }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   // The behaviour reads the latest notes through this, so the builder's preview picks up
   // edits without restarting the cat.
@@ -38,8 +42,8 @@ export default function Cat({ to, from, notes, footer }: Props) {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    return startCat(root, () => notesRef.current);
-  }, []);
+    return startCat(root, () => notesRef.current, track);
+  }, [track]);
 
   return (
     <div ref={rootRef} className="cat-scene">
@@ -155,7 +159,7 @@ export default function Cat({ to, from, notes, footer }: Props) {
 }
 
 /** Wires up the cat inside `root`. Returns a cleanup function. */
-function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
+function startCat(root: HTMLElement, getNotes: () => string[], place?: Place): () => void {
   const $ = <T extends Element = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
   const cat = $(".css-cat");
   const face = $(".cat-face-group");
@@ -173,14 +177,22 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   const body = createBody({ root, cat, face, eyes, rings: [$(".cat-eye-bg--l"), $(".cat-eye-bg--r")] }, timers);
   const bubble = createBubble($("[data-bubble]"), $("[data-bubble-text]"), timers);
   const nextNote = createNoteBag(getNotes);
-  const throwTreat = createTreat(root, treatBag, $(".cat-mouth"), body, timers);
+  const tracker = place ? createTracker(place) : null;
+  if (place === "cat") tracker?.count("opened");
+  const treat = createTreat(root, treatBag, $(".cat-mouth"), body, timers);
+  const throwTreat = () => {
+    tracker?.count("treat");
+    treat();
+  };
   const laser = createLaser(
     { root, button: laserBtn, cat, face, paws: [$(".cat-paw--l"), $(".cat-paw--r")] },
     body,
     timers,
+    { started: () => tracker?.count("laser"), caught: () => tracker?.count("catch") },
   );
 
   function pet() {
+    tracker?.count("pet");
     replay(squish, "squishing");
     bubble.show(nextNote());
   }
@@ -271,6 +283,14 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   laserBtn.addEventListener("click", laser.onClick, { signal });
   for (const el of [squish, treatBag, laserBtn]) el.addEventListener("keydown", onButtonKey, { signal });
   document.addEventListener("click", onDocClick, { signal });
+  // Tapping "send someone a cat" at the bottom.
+  root.addEventListener(
+    "click",
+    (e) => {
+      if ((e.target as Element).closest(".cat-footer a")) tracker?.count("cta");
+    },
+    { signal },
+  );
   document.addEventListener("keydown", onKey, { signal });
 
   return () => {
@@ -280,6 +300,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     laser.dispose();
     resized.disconnect();
     events.abort();
+    tracker?.dispose();
     root
       .querySelectorAll(".treat-flying, .heart-particle, .star-particle, .laser-dot, .fly")
       .forEach((el) => el.remove());

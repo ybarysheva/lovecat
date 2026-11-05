@@ -11,6 +11,10 @@ export interface KV {
   setIfAbsent(key: string, value: string): Promise<boolean>;
   /** Increments a counter and returns the new value; the key expires after `seconds`. */
   incrWithExpiry(key: string, seconds: number): Promise<number>;
+  /** Adds to several counters at once (they're created at 0 if missing). */
+  incrMany(changes: [key: string, by: number][]): Promise<void>;
+  /** Reads several keys at once, null for any that don't exist. */
+  getMany(keys: string[]): Promise<(string | null)[]>;
 }
 
 class RedisKV implements KV {
@@ -30,6 +34,18 @@ class RedisKV implements KV {
     tx.expire(key, seconds);
     const [count] = (await tx.exec()) as [number, number];
     return count;
+  }
+
+  async incrMany(changes: [string, number][]) {
+    if (changes.length === 0) return;
+    const p = this.redis.pipeline();
+    for (const [key, by] of changes) p.incrby(key, by);
+    await p.exec();
+  }
+
+  async getMany(keys: string[]) {
+    if (keys.length === 0) return [];
+    return this.redis.mget<(string | null)[]>(...keys);
   }
 }
 
@@ -73,6 +89,17 @@ class FileKV implements KV {
     const count = entry && entry.expiresAt > now ? entry.count + 1 : 1;
     this.counters.set(key, { count, expiresAt: now + seconds * 1000 });
     return count;
+  }
+
+  async incrMany(changes: [string, number][]) {
+    const data = this.read();
+    for (const [key, by] of changes) data[key] = String(Number(data[key] ?? 0) + by);
+    this.write(data);
+  }
+
+  async getMany(keys: string[]) {
+    const data = this.read();
+    return keys.map((k) => data[k] ?? null);
   }
 }
 

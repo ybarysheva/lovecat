@@ -20,7 +20,15 @@ type LaserParts = {
   paws: [HTMLElement, HTMLElement]; // left, right
 };
 
-export function createLaser({ root, button, cat, face, paws }: LaserParts, body: Body, timers: Timers) {
+/** Told when the laser is turned on and when the cat catches the dot (for counting). */
+type LaserEvents = { started?: () => void; caught?: () => void };
+
+export function createLaser(
+  { root, button, cat, face, paws }: LaserParts,
+  body: Body,
+  timers: Timers,
+  on: LaserEvents = {},
+) {
   let dot: HTMLElement | null = null;
   let following: AbortController | null = null; // the dot's pointer listeners, while it's on
   let lastSample: { x: number; y: number; t: number } | null = null;
@@ -132,6 +140,7 @@ export function createLaser({ root, button, cat, face, paws }: LaserParts, body:
       caught.style.opacity = "0";
       starWaves(root, timers.later, landing.x, landing.y, landing.scale);
       body.happy(false);
+      on.caught?.();
     }, impactMs);
 
     timers.later(() => {
@@ -143,11 +152,14 @@ export function createLaser({ root, button, cat, face, paws }: LaserParts, body:
   function onClick(e: MouseEvent) {
     if (catching) return; // let the catch finish; it turns the laser off itself
     if (dot) stop();
-    else if (e.detail === 0) {
-      // Pressed from the keyboard (no pointer position): start at the laser itself.
-      const r = button.getBoundingClientRect();
-      start(r.left + r.width / 2, r.bottom);
-    } else start(e.clientX, e.clientY);
+    else {
+      if (e.detail === 0) {
+        // Pressed from the keyboard (no pointer position): start at the laser itself.
+        const r = button.getBoundingClientRect();
+        start(r.left + r.width / 2, r.bottom);
+      } else start(e.clientX, e.clientY);
+      on.started?.();
+    }
   }
 
   return {

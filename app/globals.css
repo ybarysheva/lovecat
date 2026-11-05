@@ -384,3 +384,41 @@ textarea.input {
   color: var(--ink-soft);
   max-width: 40ch;
 }
+
+/* Stats page (/stats) */
+.builder.stats {
+  max-width: 1100px;
+  padding-bottom: 48px;
+}
+.stats-table {
+  overflow-x: auto;
+  margin-top: 20px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper-light);
+}
+.stats-table table {
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+.stats-table th,
+.stats-table td {
+  padding: 6px 10px;
+  text-align: right;
+  border-bottom: 1px solid var(--line);
+}
+.stats-table tbody th {
+  text-align: left;
+  font-weight: 500;
+  position: sticky;
+  left: 0;
+  background: var(--paper-light);
+}
+.stats-table thead th {
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.stats-table td.total {
+  font-weight: 700;
+}
