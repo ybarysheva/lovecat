@@ -49,8 +49,8 @@ const WALLPAPER = {
 };
 // How much ink, 0 (paper) to 1 (solid).
 const TONE = {
-  motif: 0.32, // wallpaper is printed at about a third density, so it stays light
-  fishLine: 0.5, // fish bone lines are dotted at half density, so they're as light as the paws
+  motif: 0.26, // wallpaper is printed at about a quarter density, so it stays light
+  fishLine: 0.4, // fish bone lines are dotted, so they're about as light as the paws
   floor: 0.05, // the boards themselves: nearly clean
 };
 // The corner fades out toward the sides: full near the cat, gone by `fadeTo` from its center.
