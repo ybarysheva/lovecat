@@ -21,14 +21,14 @@ const BAYER8 = [
 const FLOOR_AT = 300; // floor line, in the cat's coordinates (through the cushion)
 const BASEBOARD = 14; // height of the baseboard above the floor line
 const WALLPAPER = {
-  spacingX: 100, // between motifs in a row
-  spacingY: 88, // between rows; odd rows shift half a step (a half-drop repeat)
-  pawSize: 20,
-  fishSize: 25,
+  spacingX: 84, // between motifs in a row
+  spacingY: 74, // between rows; odd rows shift half a step (a half-drop repeat)
+  pawSize: 26,
+  fishSize: 32,
 };
 // How much ink, 0 (paper) to 1 (solid).
 const TONE = {
-  motif: 0.42, // wallpaper is printed at well under half density, so it stays light
+  motif: 0.32, // wallpaper is printed at about a third density, so it stays light
   baseboard: 0.2,
   floor: 0.1,
 };
