@@ -8,6 +8,14 @@
 const SVG_NS = "http://www.w3.org/2000/svg";
 const INK = "#1C1410";
 const PAPER = "#D4C5A9";
+// The leaves' dotted fill is printed in a lighter ink (outlines and vines stay full ink).
+// LEAF_FADE is how far toward the paper color: 0 = full ink, 1 = paper.
+const LEAF_FADE = 0.35;
+const LEAF_INK = (() => {
+  const a = [0x1c, 0x14, 0x10];
+  const b = [0xd4, 0xc5, 0xa9];
+  return "#" + a.map((c, i) => Math.round(c + (b[i] - c) * LEAF_FADE).toString(16).padStart(2, "0")).join("");
+})();
 
 const BAYER8 = [
   [0, 32, 8, 40, 2, 34, 10, 42],
@@ -105,7 +113,7 @@ function ditherPattern(id: string, density: number) {
   p.appendChild(el("rect", { width: 8, height: 8, fill: PAPER }));
   for (let y = 0; y < 8; y++) {
     for (let x = 0; x < 8; x++) {
-      if ((BAYER8[y][x] + 0.5) / 64 < density) p.appendChild(el("rect", { x, y, width: 1, height: 1, fill: INK }));
+      if ((BAYER8[y][x] + 0.5) / 64 < density) p.appendChild(el("rect", { x, y, width: 1, height: 1, fill: LEAF_INK }));
     }
   }
   return p;
