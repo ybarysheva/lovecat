@@ -61,13 +61,12 @@ export default function Cat({ to, from, notes, footer }: Props) {
               <div className="css-cat">
                 <div className="cat-cloud"></div>
 
-                {/* Tail: one tapered curve, animated in startCat. The pattern is the body's 75% dither,
-                    in the cat's own coordinates so it lines up with the body's. */}
+                {/* Tail: one tapered curve, animated in startCat, filled with its shaded dither
+                    texture (public/tex/tail.png, in the cat's own coordinates). */}
                 <svg className="cat-tail" viewBox="0 0 300 340" aria-hidden="true">
                   <defs>
-                    <pattern id={ditherId} width="4" height="4" patternUnits="userSpaceOnUse">
-                      <rect width="4" height="4" fill="#1C1410" />
-                      <rect x="2" y="0" width="2" height="2" fill="#D4C5A9" />
+                    <pattern id={ditherId} width="340" height="340" patternUnits="userSpaceOnUse">
+                      <image href="/tex/tail.png" width="340" height="340" preserveAspectRatio="none" style={{ imageRendering: "pixelated" }} />
                     </pattern>
                   </defs>
                   <path className="cat-tail-path" d={tailPath(0)} fill={`url(#${ditherId})`} />
