@@ -21,14 +21,14 @@ const BAYER8 = [
 const FLOOR_AT = 300; // floor line, in the cat's coordinates (through the cushion)
 const BASEBOARD = 14; // height of the baseboard above the floor line
 const WALLPAPER = {
-  spacingX: 78, // between motifs in a row
-  spacingY: 68, // between rows; odd rows shift half a step (a half-drop repeat)
-  pawSize: 15,
-  fishSize: 19,
+  spacingX: 100, // between motifs in a row
+  spacingY: 88, // between rows; odd rows shift half a step (a half-drop repeat)
+  pawSize: 20,
+  fishSize: 25,
 };
 // How much ink, 0 (paper) to 1 (solid).
 const TONE = {
-  motif: 0.55, // wallpaper is printed at about half density, so it stays light
+  motif: 0.42, // wallpaper is printed at well under half density, so it stays light
   baseboard: 0.2,
   floor: 0.1,
 };
@@ -61,7 +61,7 @@ function drawPaw(ctx: CanvasRenderingContext2D, x: number, y: number, size: numb
 
 function drawFishBone(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
   const half = size / 2;
-  const line = Math.max(1.5, size * 0.11);
+  const line = Math.max(2, size * 0.12);
   // Head (pointing left).
   ctx.beginPath();
   ctx.moveTo(x - half, y);
@@ -114,10 +114,13 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
     const first = Math.floor((0 - cx - shift) / sx) - 1;
     const last = Math.ceil((w - cx - shift) / sx) + 1;
     for (let col = first; col <= last; col++) {
-      const x = cx + shift + col * sx;
+      // Snap each motif to the 8px dither grid so every one gets exactly the same dots
+      // (otherwise some come out darker than others, depending on where they land).
+      const x = Math.round((cx + shift + col * sx) / 8) * 8;
+      const ySnapped = Math.round(y / 8) * 8;
       // Alternate motifs along the row, offset each row so they checker.
-      if ((col + row) % 2 === 0) drawPaw(ctx, x, y, WALLPAPER.pawSize * s);
-      else drawFishBone(ctx, x, y, WALLPAPER.fishSize * s);
+      if ((col + row) % 2 === 0) drawPaw(ctx, x, ySnapped, WALLPAPER.pawSize * s);
+      else drawFishBone(ctx, x, ySnapped, WALLPAPER.fishSize * s);
     }
   }
   const motifs = ctx.getImageData(0, 0, w, h).data;
