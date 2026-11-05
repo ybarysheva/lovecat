@@ -1,6 +1,6 @@
 // The background: the corner of a room. The wall has a light wallpaper of small paw
 // prints and fish bones; below it a prewar Brooklyn-style baseboard (illustrated in
-// light, fine lines) and a lightly dithered floor, both fading
+// light, fine lines) and a hardwood strip floor in fine dotted lines, both fading
 // out toward the sides. Drawn in the cat's two colors (ink motifs, 1px ordered dither
 // for tones) and placed relative to the cat, so it lines up on any screen.
 
@@ -51,10 +51,24 @@ const WALLPAPER = {
 const TONE = {
   motif: 0.32, // wallpaper is printed at about a third density, so it stays light
   fishLine: 0.5, // fish bone lines are dotted at half density, so they're as light as the paws
-  floor: 0.1,
+  floor: 0.05, // the boards themselves: nearly clean
 };
 // The corner fades out toward the sides: full near the cat, gone by `fadeTo` from its center.
 const FADE = { from: 200, to: 620 };
+// Hardwood strip flooring, as in a prewar Brooklyn apartment: narrow boards running away
+// from the wall, drawn in perspective (seams fan out toward you from a vanishing point
+// above the floor line), with staggered joints where boards end. In the cat's units.
+const FLOORBOARDS = {
+  width: 15, // a board's width where it meets the wall
+  vanish: 700, // how far above the floor line the seams converge (far: gentle perspective)
+  plank: 0.11, // board length, in perspective depth units (1 = at the wall)
+  line: 0.45, // how dark seams and joints are
+};
+const hash = (n: number) => {
+  const v = Math.sin(n * 12.9898) * 43758.5453;
+  return v - Math.floor(v);
+};
+
 // A soft shadow on the floor where the cushion sits (its bottom is at the cat's y 340).
 const BED_SHADOW = { y: 340, rx: 155, ry: 13, ink: 0.22 };
 
@@ -209,10 +223,21 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
           }
           tone = band?.ink ?? 0;
         } else {
-          tone = TONE.floor * (1 - smoothstep(0, 320 * s, y - floorY)); // floor, fading toward you
+          const toward = 1 - smoothstep(0, 320 * s, y - floorY); // the floor fades toward you
+          tone = TONE.floor * toward;
+          // Floorboards: is this pixel on a seam between boards, or a joint where one ends?
+          const vanish = FLOORBOARDS.vanish * s;
+          const depth = y + 0.5 - (floorY - vanish);
+          const pitch = (FLOORBOARDS.width * s * depth) / vanish; // board width at this row, px
+          const u = (x + 0.5 - cx) / pitch;
+          const seam = Math.abs(u - Math.round(u)) * pitch < 0.55;
+          const z = vanish / depth + hash(Math.floor(u)) * FLOORBOARDS.plank;
+          const zf = z / FLOORBOARDS.plank;
+          const joint = Math.abs(zf - Math.round(zf)) * FLOORBOARDS.plank * ((depth * depth) / vanish) < 0.55;
+          if (seam || joint) tone = Math.max(tone, FLOORBOARDS.line * toward);
           // The bed's shadow, darkest right under its edge and fading out.
-          const d = Math.hypot((x + 0.5 - cx) / (BED_SHADOW.rx * s), (y + 0.5 - (cat.top + BED_SHADOW.y * s)) / (BED_SHADOW.ry * s));
-          tone += BED_SHADOW.ink * (1 - smoothstep(0.35, 1, d));
+          const sd = Math.hypot((x + 0.5 - cx) / (BED_SHADOW.rx * s), (y + 0.5 - (cat.top + BED_SHADOW.y * s)) / (BED_SHADOW.ry * s));
+          tone += BED_SHADOW.ink * (1 - smoothstep(0.35, 1, sd));
         }
         ink = tone * side > (row[x & 7] + 0.5) / 64;
       }
