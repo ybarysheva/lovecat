@@ -338,16 +338,6 @@
   border-radius: 46% 46% 0 0 / 64% 64% 0 0;
   z-index: 5;
 }
-.cat-cloud::after {
-  content: '';
-  position: absolute;
-  bottom: -13px;
-  left: 0; right: 0;
-  height: 26px;
-  background:
-    radial-gradient(circle, #D4C5A9 47%, #1C1410 48%, #1C1410 52%, transparent 53%)
-    0 0 / 26px 26px repeat-x;
-}
 
 /* ---------- TAIL (75% dark) ---------- */
 /* An SVG over the whole cat; the path is drawn and animated by components/tail.ts. */
@@ -713,6 +703,8 @@
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.6rem;
   color: #322922; /* ink at 88% on paper, like the "pet the cat" label */
+  background: #D4C5A9; /* paper underlay, so the wallpaper never shows through */
+  padding: 1px 4px;
   margin-top: 4px;
   letter-spacing: 0.04em;
 }
@@ -777,6 +769,8 @@
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.6rem;
   color: #322922; /* ink at 88% on paper, like the "pet the cat" label */
+  background: #D4C5A9; /* paper underlay, so the wallpaper never shows through */
+  padding: 1px 4px;
   margin-top: 4px;
   letter-spacing: 0.04em;
 }
