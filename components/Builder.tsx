@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Cat from "./Cat";
-import { clean, LIMITS, validateCard } from "@/lib/card";
+import { clean, LIMITS, validateCard, type FieldErrors } from "@/lib/card";
 import { STARTER_NOTES } from "@/lib/starter-notes";
 
 type Draft = { to: string; from: string; notes: string[] };
@@ -43,13 +43,18 @@ export default function Builder() {
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [loaded, setLoaded] = useState(false);
   const [writing, setWriting] = useState("");
+  // Errors about one field are shown under that field; `error` is for everything else
+  // (connection, server, copy), shown by the Create link button.
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors & { write?: string }>({});
   const [creating, setCreating] = useState(false);
   const [preview, setPreview] = useState(false);
   const [link, setLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
   const toRef = useRef<HTMLInputElement>(null);
+  const fromRef = useRef<HTMLInputElement>(null);
+  const notesRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setDraft(loadDraft());
@@ -74,6 +79,21 @@ export default function Builder() {
   const update = (patch: Partial<Draft>) => {
     setDraft((d) => ({ ...d, ...patch }));
     setError(null);
+    // Changing a field clears its error.
+    setFieldErrors((f) => ({
+      ...f,
+      ...("to" in patch && { to: undefined }),
+      ...("from" in patch && { from: undefined }),
+      ...("notes" in patch && { notes: undefined, write: undefined }),
+    }));
+  };
+
+  /** Shows field errors and takes the person to the first one. */
+  const showFieldErrors = (errors: FieldErrors & { write?: string }) => {
+    setFieldErrors(errors);
+    if (errors.to) toRef.current?.focus();
+    else if (errors.from) fromRef.current?.focus();
+    else if (errors.notes || errors.write) notesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const full = draft.notes.length >= LIMITS.maxNotes;
@@ -88,11 +108,11 @@ export default function Builder() {
     const text = clean(writing);
     if (!text) return;
     if (text.length > LIMITS.note) {
-      setError(`Each note can be up to ${LIMITS.note} characters.`);
+      setFieldErrors((f) => ({ ...f, write: `Each note can be up to ${LIMITS.note} characters.` }));
       return;
     }
     if (full) {
-      setError(`A cat can hold up to ${LIMITS.maxNotes} notes.`);
+      setFieldErrors((f) => ({ ...f, write: `A cat can hold up to ${LIMITS.maxNotes} notes.` }));
       return;
     }
     if (!has(text)) update({ notes: [...draft.notes, text] });
@@ -101,16 +121,13 @@ export default function Builder() {
 
   const check = () => {
     const result = validateCard({ to: draft.to, from: draft.from, notes: draft.notes });
-    if (!result.ok) {
-      setError(result.error);
-      if (!clean(draft.to)) toRef.current?.focus();
-    }
+    if (!result.ok) showFieldErrors(result.errors);
     return result;
   };
 
   const openPreview = () => {
     if (draft.notes.length === 0) {
-      setError("Add at least one note to preview the cat.");
+      showFieldErrors({ notes: "Add at least one note to preview the cat." });
       return;
     }
     setPreview(true);
@@ -127,7 +144,11 @@ export default function Builder() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(result.card),
       });
-      const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
+      const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string; errors?: FieldErrors };
+      if (body.errors && Object.values(body.errors).some(Boolean)) {
+        showFieldErrors(body.errors);
+        return;
+      }
       if (!res.ok || !body.id) throw new Error(body.error || "Couldn't create the link. Try again.");
       setLink(`${window.location.origin}/c/${body.id}`);
       setCopied(false);
@@ -166,6 +187,7 @@ export default function Builder() {
     setDraft(EMPTY);
     setWriting("");
     setError(null);
+    setFieldErrors({});
   };
 
   if (link) {
@@ -223,34 +245,58 @@ export default function Builder() {
             <span className="field-label">Their name</span>
             <input
               ref={toRef}
-              className="input"
+              className={fieldErrors.to ? "input invalid" : "input"}
+              aria-invalid={!!fieldErrors.to}
+              aria-describedby={fieldErrors.to ? "to-error" : undefined}
               value={draft.to}
               onChange={(e) => update({ to: e.target.value })}
               maxLength={LIMITS.name}
               autoComplete="off"
             />
+            {fieldErrors.to && (
+              <span className="field-error" id="to-error">
+                {fieldErrors.to}
+              </span>
+            )}
           </label>
           <label className="field">
             <span className="field-label">
               Your name <span className="optional">(optional)</span>
             </span>
             <input
-              className="input"
+              ref={fromRef}
+              className={fieldErrors.from ? "input invalid" : "input"}
+              aria-invalid={!!fieldErrors.from}
+              aria-describedby={fieldErrors.from ? "from-error" : undefined}
               value={draft.from}
               onChange={(e) => update({ from: e.target.value })}
               maxLength={LIMITS.name}
               autoComplete="off"
             />
+            {fieldErrors.from && (
+              <span className="field-error" id="from-error">
+                {fieldErrors.from}
+              </span>
+            )}
           </label>
         </section>
 
-        <section className="panel">
+        <section
+          ref={notesRef}
+          className={fieldErrors.notes ? "panel invalid" : "panel"}
+          aria-describedby={fieldErrors.notes ? "notes-error" : undefined}
+        >
           <h2>
             Your notes{" "}
             <span className="count">
               ({draft.notes.length}/{LIMITS.maxNotes})
             </span>
           </h2>
+          {fieldErrors.notes && (
+            <p className="field-error panel-error" id="notes-error" role="alert">
+              {fieldErrors.notes}
+            </p>
+          )}
           <form
             className="write-row"
             onSubmit={(e) => {
@@ -263,9 +309,14 @@ export default function Builder() {
             </label>
             <textarea
               id="write"
-              className="input"
+              className={fieldErrors.write ? "input invalid" : "input"}
+              aria-invalid={!!fieldErrors.write}
+              aria-describedby={fieldErrors.write ? "write-error" : undefined}
               value={writing}
-              onChange={(e) => setWriting(e.target.value)}
+              onChange={(e) => {
+                setWriting(e.target.value);
+                setFieldErrors((f) => ({ ...f, write: undefined }));
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -280,6 +331,11 @@ export default function Builder() {
               Add
             </button>
           </form>
+          {fieldErrors.write && (
+            <p className="field-error" id="write-error">
+              {fieldErrors.write}
+            </p>
+          )}
           {writing.length > LIMITS.note - 40 && (
             <p className="hint">
               {writing.length}/{LIMITS.note}

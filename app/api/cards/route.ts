@@ -30,7 +30,9 @@ export async function POST(req: Request) {
       return error("The request isn't valid JSON.", 400);
     }
     const result = validateCard(body);
-    if (!result.ok) return error(result.error, 400);
+    if (!result.ok) {
+      return Response.json({ error: result.error, errors: result.errors }, { status: 400, headers: NO_STORE });
+    }
 
     // A content check (e.g. an AI abuse filter) would go here, before anything is stored.
 
