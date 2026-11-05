@@ -199,7 +199,7 @@ export default function Builder() {
         </p>
         <section className="panel result" aria-live="polite">
           <h2>{name ? `${name}'s cat is ready` : "Your cat is ready"}</h2>
-          <p className="hint">Send this link. Anyone with it can pet the cat and read the notes.</p>
+          <p className="hint">Anyone with this link can pet the cat and see the messages.</p>
           <output className="link-box">{link}</output>
           <div className="result-row">
             <button type="button" className="btn btn-primary" onClick={copy}>
