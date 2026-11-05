@@ -17,7 +17,7 @@
   font-family: 'Courier New', Courier, monospace;
 }
 
-/* Background canvas: the room and its sunbeam (components/sunbeam.ts). One canvas
+/* Background canvas: the room corner and wallpaper (components/room.ts). One canvas
    pixel per CSS pixel, kept crisp like the cat's dither. */
 .cat-bg {
   position: absolute;

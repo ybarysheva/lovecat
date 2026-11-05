@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
-import { drawSunbeam } from "./sunbeam";
+import { drawRoom } from "./room";
 import { TAIL_SWISH, tailPath } from "./tail";
 import "./cat.css";
 
@@ -31,7 +31,7 @@ export default function Cat({ to, from, notes, footer }: Props) {
 
   return (
     <div ref={rootRef} className="cat-scene">
-      {/* Background: the room and its sunbeam, drawn in startCat (components/sunbeam.ts). */}
+      {/* Background: the corner of a room with light wallpaper, drawn in startCat (components/room.ts). */}
       <canvas className="cat-bg" aria-hidden="true"></canvas>
       {/* LASER POINTER — fixed top-right, below treat bag */}
       <div className="laser-btn" data-laser role="button" aria-label="Play with the laser pointer">
@@ -749,7 +749,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   function drawBackground() {
     const scene = root.getBoundingClientRect();
     const cat = catHover.getBoundingClientRect();
-    drawSunbeam(bgCanvas, scene.width, scene.height, {
+    drawRoom(bgCanvas, scene.width, scene.height, {
       left: cat.left - scene.left,
       top: cat.top - scene.top,
       scale: cat.width / 300,
