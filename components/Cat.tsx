@@ -433,6 +433,12 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
             easing: "ease-in",
           },
           {
+            // Still fully visible two thirds of the way up, so they're seen rising past the head.
+            transform: `translate(calc(-50% + ${spread * 0.7}px), calc(-50% - ${rise * 0.7}px)) scale(0.95) rotate(${rot * 0.7}deg)`,
+            opacity: 1,
+            offset: 0.65,
+          },
+          {
             transform: `translate(calc(-50% + ${spread}px), calc(-50% - ${rise}px)) scale(0.7) rotate(${rot}deg)`,
             opacity: 0,
           },
@@ -615,7 +621,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
       dot.style.transition = "transform 0.08s ease-in, opacity 0.08s ease-in";
       dot.style.transform = "translate(-50%, -50%) scale(0)";
       dot.style.opacity = "0";
-      spawnStarBurst(landing.x, landing.y, landing.scale);
+      spawnStarWaves(landing.x, landing.y, landing.scale);
       startHappyState(false); // same squint, vibration and purr as the treat reward
     }, impactMs);
 
@@ -625,40 +631,60 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     }, POUNCE_MS + 150);
   }
 
-  function spawnStarBurst(x: number, y: number, scale: number) {
-    const glyphs = ["✦", "✧", "★", "✶"];
-    const count = 12;
-    for (let i = 0; i < count; i++) {
-      const star = document.createElement("div");
-      star.className = "star-particle";
-      star.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
-      star.style.left = x + "px";
-      star.style.top = y + "px";
-      star.style.fontSize = (12 + Math.random() * 14) * scale + "px";
-      root.appendChild(star);
+  // Stars rise from where the dot was caught, in waves like the treat's hearts, floating
+  // up past the cat's head.
+  function spawnStarWaves(x: number, y: number, scale: number) {
+    [
+      { delay: 0, count: 10 },
+      { delay: 900, count: 9 },
+      { delay: 1800, count: 7 },
+      { delay: 2700, count: 5 },
+    ].forEach(({ delay, count }) => {
+      later(() => {
+        for (let i = 0; i < count; i++) later(() => spawnOneStar(x, y, scale), i * 85);
+      }, delay);
+    });
+  }
 
-      // Evenly spread around the circle, with a little jitter, mostly upward.
-      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const dist = (45 + Math.random() * 55) * scale;
-      const dx = Math.cos(angle) * dist;
-      const dy = Math.sin(angle) * dist * 0.75 - 20 * scale;
-      const rot = (Math.random() - 0.5) * 120;
-      star
-        .animate(
-          [
-            { transform: "translate(-50%,-50%) scale(0) rotate(0deg)", opacity: 1, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)" },
-            {
-              transform: `translate(calc(-50% + ${dx * 0.8}px), calc(-50% + ${dy * 0.8}px)) scale(1.2) rotate(${rot * 0.7}deg)`,
-              opacity: 1,
-              offset: 0.55,
-            },
-            { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.6) rotate(${rot}deg)`, opacity: 0 },
-          ],
-          { duration: 700 + Math.random() * 300, fill: "forwards" },
-        )
-        .finished.then(() => star.remove())
-        .catch(() => star.remove());
-    }
+  function spawnOneStar(x: number, y: number, scale: number) {
+    const glyphs = ["✦", "✧", "★", "✶"];
+    const star = document.createElement("div");
+    star.className = "star-particle";
+    star.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    star.style.left = x + (Math.random() - 0.5) * 80 * scale + "px";
+    star.style.top = y + (Math.random() - 0.5) * 24 * scale + "px";
+    star.style.fontSize = (12 + Math.random() * 16) * scale + "px";
+    root.appendChild(star);
+
+    const spread = (Math.random() - 0.5) * 180 * scale;
+    const rise = (140 + Math.random() * 130) * scale;
+    const rot = (Math.random() - 0.5) * 90;
+    const dur = 1300 + Math.random() * 700;
+
+    star
+      .animate(
+        [
+          { transform: "translate(-50%,-50%) scale(0) rotate(0deg)", opacity: 0, easing: "ease-out" },
+          {
+            transform: `translate(-50%,-50%) scale(1.3) rotate(${rot * 0.3}deg)`,
+            opacity: 1,
+            offset: 0.15,
+          },
+          {
+            // Still fully visible two thirds of the way up, so they're seen rising past the head.
+            transform: `translate(calc(-50% + ${spread * 0.7}px), calc(-50% - ${rise * 0.7}px)) scale(0.95) rotate(${rot * 0.7}deg)`,
+            opacity: 1,
+            offset: 0.65,
+          },
+          {
+            transform: `translate(calc(-50% + ${spread}px), calc(-50% - ${rise}px)) scale(0.7) rotate(${rot}deg)`,
+            opacity: 0,
+          },
+        ],
+        { duration: dur, fill: "forwards" },
+      )
+      .finished.then(() => star.remove())
+      .catch(() => star.remove());
   }
 
   const onPointer = (e: PointerEvent) => moveDot(e.clientX, e.clientY);
