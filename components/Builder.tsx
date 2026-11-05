@@ -217,7 +217,7 @@ export default function Builder() {
           {error && <p className="error" style={{ marginTop: 10 }}>{error}</p>}
           <div className="again">
             <button type="button" className="linkish" onClick={startOver}>
-              Make another cat
+              Send another cat
             </button>
           </div>
         </section>
