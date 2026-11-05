@@ -479,7 +479,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   let lastSample: { x: number; y: number; t: number } | null = null;
 
   const SWIPE_SPEED = 1.2; // px per ms; faster dot movement than this makes the cat swipe
-  const SWIPES_TO_CATCH = 8; // after this many swipes, the cat catches the dot once it comes near the paws
+  const SWIPES_TO_CATCH = 5; // after this many swipes, the cat catches the dot once it comes near the paws
   let swipes = 0;
   let catching = false;
   const PUPIL_TRAVEL = 3; // px the pupils can move inside their light rings
