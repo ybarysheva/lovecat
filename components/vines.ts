@@ -22,13 +22,17 @@ const BAYER8 = [
 
 // The swag across the top-left corner (CSS px from the top-left of the screen): it comes
 // in from the left edge and sags in an even, rounded curve before rising to the top edge.
+// Everything about the plant is sized by this, so it sits in scale with the cat and the
+// wallpaper (1 = the original, smaller plant).
+const K = 1.4;
+
 const SWAG = {
-  start: { x: -10, y: 30 },
-  end: { x: 150, y: -6 },
-  sag: 66, // how far the middle hangs below the straight line between the ends
+  start: { x: -10 * K, y: 30 * K },
+  end: { x: 150 * K, y: -6 },
+  sag: 66 * K, // how far the middle hangs below the straight line between the ends
   breathe: 0, // the swag stays still (set above 0 to let it rise and fall)
   periodMs: 7000,
-  leafEvery: 15,
+  leafEvery: 15 * K,
 };
 
 // Hanging strands: where they hang from (px from the left, given the screen width), how
@@ -47,15 +51,15 @@ type StrandSpec = {
   bare?: number; // px either side of where it crosses the swag with no leaves (no clump)
 };
 const STRANDS: StrandSpec[] = [
-  { from: () => 0, throughSwag: true, bare: 19, length: 215, lean: 2, wander: 11, periodMs: 5600, phase: 0, seed: 11 },
-  { from: (w) => Math.min(w * 0.7, w - 95), length: 105, lean: -3, wander: 9, periodMs: 4700, phase: 2.1, seed: 29 },
+  { from: () => 0, throughSwag: true, bare: 19 * K, length: 165 * K, lean: 2, wander: 11, periodMs: 5600, phase: 0, seed: 11 },
+  { from: (w) => Math.min(w * 0.7, w - 95), length: 105 * K, lean: -3, wander: 9, periodMs: 4700, phase: 2.1, seed: 29 },
 ];
 // Only the lower ends of the strands move: the sway fades in over the last `swayFrom` of
 // their length, up to `amplitude` degrees at the tip.
 const TOP = -6; // strands hang from just above the top edge
-const STRAND = { amplitude: 4, swayFrom: 0.55, leafEvery: 17, segment: 6 }; // degrees, fraction, px, px
+const STRAND = { amplitude: 4, swayFrom: 0.55, leafEvery: 17 * K, segment: 6 }; // degrees, fraction, px, px
 
-const LEAF = { min: 8, max: 18, stroke: 0.65 }; // outline width: thin, so leaves read light
+const LEAF = { min: 8 * K, max: 18 * K, stroke: 0.75 }; // outline width: thin, so leaves read light
 
 // A small seeded random generator, so the leaves land in the same places every time.
 function random(seed: number) {
@@ -177,21 +181,21 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
 
   function makeLeaf(group: SVGGElement, at: number, side: 1 | -1, rnd: () => number, droop: number, even = false): Leaf {
     // Even leaves (the swag) stay close to one size and shape; the strands vary a lot.
-    const size = even ? 12 + rnd() * 3 : LEAF.min + rnd() * (LEAF.max - LEAF.min);
+    const size = even ? (12 + rnd() * 3) * K : LEAF.min + rnd() * (LEAF.max - LEAF.min);
     // Some leaves face us (wide), some are turned away (narrow).
     const wide = even ? 0.42 + rnd() * 0.08 : rnd() < 0.25 ? 0.22 + rnd() * 0.1 : 0.4 + rnd() * 0.16;
     const lopsided = (rnd() - 0.5) * (even ? 0.15 : 0.35);
     const bend = (rnd() - 0.5) * (even ? 0.08 : 0.18);
     // A short curved stalk from the vine to the leaf.
-    const stalk = 3 + rnd() * 6;
-    const curl = (rnd() - 0.5) * 6;
+    const stalk = (3 + rnd() * 6) * K;
+    const curl = (rnd() - 0.5) * 6 * K;
     const g = el("g", {});
     g.appendChild(
       el("path", {
         d: `M0 0 Q ${(stalk * 0.5).toFixed(1)} ${curl.toFixed(1)} ${stalk.toFixed(1)} 0`,
         fill: "none",
         stroke: INK,
-        "stroke-width": 0.85,
+        "stroke-width": 1,
         "stroke-linecap": "round",
       }),
     );
@@ -234,7 +238,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     bareAt?: { at: number; half: number },
   ): Strand {
     const group = el("g", {});
-    const stem = el("path", { fill: "none", stroke: INK, "stroke-width": 1.2, "stroke-linecap": "round", "stroke-linejoin": "round" });
+    const stem = el("path", { fill: "none", stroke: INK, "stroke-width": 1.4, "stroke-linecap": "round", "stroke-linejoin": "round" });
     group.appendChild(stem);
     const rnd = random(seed);
     const leaves: Leaf[] = [];
@@ -277,7 +281,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
         ? makeStrand(crossAt + spec.length, STRAND.leafEvery, spec.seed, 0.3, false, { at: crossAt, half: spec.bare ?? 0 })
         : makeStrand(spec.length, STRAND.leafEvery, spec.seed, 0.3),
     }));
-    swag = makeStrand(220, SWAG.leafEvery, 7, 0.5, true);
+    swag = makeStrand(220 * K, SWAG.leafEvery, 7, 0.5, true);
   }
 
   function place(strand: Strand, pts: Point[]) {
