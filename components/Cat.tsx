@@ -477,6 +477,9 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   let lastSample: { x: number; y: number; t: number } | null = null;
 
   const SWIPE_SPEED = 1.2; // px per ms; faster dot movement than this makes the cat swipe
+  const SWIPES_TO_CATCH = 8; // after this many swipes, the cat catches the dot once it comes near the paws
+  let swipes = 0;
+  let catching = false;
   const PUPIL_TRAVEL = 3; // px the pupils can move inside their light rings
 
   function catCenterX() {
@@ -512,6 +515,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   function triggerPawSwipe(dotX: number) {
     const paw = dotX < catCenterX() ? pawL : pawR;
     if (paw.classList.contains("swiping")) return;
+    swipes++;
     paw.classList.add("swiping");
     paw.addEventListener("animationend", () => paw.classList.remove("swiping"), { once: true });
   }
@@ -525,8 +529,8 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     cssCat.classList.remove("tail-alert");
     catFaceGroup.classList.remove("ears-alert");
     catFaceGroup.style.transform = "";
-    pawL.classList.remove("swiping");
-    pawR.classList.remove("swiping");
+    pawL.classList.remove("swiping", "pouncing");
+    pawR.classList.remove("swiping", "pouncing");
     eyeL.style.translate = "";
     eyeR.style.translate = "";
   }
@@ -547,6 +551,100 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
       if (speed > SWIPE_SPEED) triggerPawSwipe(x);
       lastSample = { x, y, t };
     }
+
+    if (swipes >= SWIPES_TO_CATCH && nearPaws(x, y)) catchDot();
+  }
+
+  /** Converts a point in the cat's own 300×340 drawing to screen coordinates. */
+  function catPoint(cx: number, cy: number) {
+    const r = cssCat.getBoundingClientRect();
+    const scale = r.width / 300; // the cat is shrunk on short screens
+    return { x: r.left + cx * scale, y: r.top + cy * scale, scale };
+  }
+
+  // The catch zone: just around and in front of the two front paws.
+  function nearPaws(x: number, y: number) {
+    const topLeft = catPoint(56, 212);
+    const bottomRight = catPoint(244, 304);
+    return x >= topLeft.x && x <= bottomRight.x && y >= topLeft.y && y <= bottomRight.y;
+  }
+
+  // ---- CATCH: the reward after enough swipes ----
+  const POUNCE_MS = 550;
+  const IMPACT_AT = 0.62; // fraction of the pounce when the paws land
+
+  function catchDot() {
+    const dot = laserDot;
+    if (!dot || catching) return;
+    catching = true;
+    document.removeEventListener("pointermove", onPointer);
+    document.removeEventListener("pointerdown", onPointer);
+
+    // The dot slides under the spot where the paws will meet.
+    const landing = catPoint(150, 273);
+    tiltHead(landing.x);
+    lookAt(landing.x, landing.y);
+    const impactMs = Math.round(POUNCE_MS * IMPACT_AT);
+    dot.style.transition = `left ${impactMs}ms ease-in, top ${impactMs}ms ease-in`;
+    dot.style.left = landing.x + "px";
+    dot.style.top = landing.y + "px";
+
+    for (const paw of [pawL, pawR]) {
+      paw.classList.remove("swiping", "pouncing");
+      void paw.offsetWidth;
+      paw.classList.add("pouncing");
+      paw.addEventListener("animationend", () => paw.classList.remove("pouncing"), { once: true });
+    }
+
+    later(() => {
+      // Paws land: the dot is gone, stars burst, purr.
+      dot.style.transition = "transform 0.08s ease-in, opacity 0.08s ease-in";
+      dot.style.transform = "translate(-50%, -50%) scale(0)";
+      dot.style.opacity = "0";
+      spawnStarBurst(landing.x, landing.y, landing.scale);
+      playPurr(3800);
+    }, impactMs);
+
+    later(() => {
+      catching = false;
+      stopLaser();
+    }, POUNCE_MS + 150);
+  }
+
+  function spawnStarBurst(x: number, y: number, scale: number) {
+    const glyphs = ["✦", "✧", "★", "✶"];
+    const count = 12;
+    for (let i = 0; i < count; i++) {
+      const star = document.createElement("div");
+      star.className = "star-particle";
+      star.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+      star.style.left = x + "px";
+      star.style.top = y + "px";
+      star.style.fontSize = (12 + Math.random() * 14) * scale + "px";
+      root.appendChild(star);
+
+      // Evenly spread around the circle, with a little jitter, mostly upward.
+      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const dist = (45 + Math.random() * 55) * scale;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist * 0.75 - 20 * scale;
+      const rot = (Math.random() - 0.5) * 120;
+      star
+        .animate(
+          [
+            { transform: "translate(-50%,-50%) scale(0) rotate(0deg)", opacity: 1, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)" },
+            {
+              transform: `translate(calc(-50% + ${dx * 0.8}px), calc(-50% + ${dy * 0.8}px)) scale(1.2) rotate(${rot * 0.7}deg)`,
+              opacity: 1,
+              offset: 0.55,
+            },
+            { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.6) rotate(${rot}deg)`, opacity: 0 },
+          ],
+          { duration: 700 + Math.random() * 300, fill: "forwards" },
+        )
+        .finished.then(() => star.remove())
+        .catch(() => star.remove());
+    }
   }
 
   const onPointer = (e: PointerEvent) => moveDot(e.clientX, e.clientY);
@@ -560,6 +658,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     laserDot.className = "laser-dot";
     root.appendChild(laserDot);
     lastSample = null;
+    swipes = 0;
     moveDot(x, y); // starts where the laser was tapped
 
     document.addEventListener("pointermove", onPointer);
@@ -582,6 +681,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   }
 
   const onLaserClick = (e: MouseEvent) => {
+    if (catching) return; // let the catch finish; it turns the laser off itself
     if (laserDot) stopLaser();
     else startLaser(e.clientX, e.clientY);
   };
@@ -613,6 +713,6 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     document.removeEventListener("keydown", onKey);
     document.removeEventListener("pointermove", onPointer);
     document.removeEventListener("pointerdown", onPointer);
-    root.querySelectorAll(".treat-flying, .heart-particle, .laser-dot").forEach((el) => el.remove());
+    root.querySelectorAll(".treat-flying, .heart-particle, .star-particle, .laser-dot").forEach((el) => el.remove());
   };
 }
