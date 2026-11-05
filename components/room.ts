@@ -26,10 +26,10 @@ const FLOOR_AT = 300; // floor line, in the cat's coordinates (through the cushi
 // heights in the cat's units; `ink` is how dark each band is (0 paper, 1 solid). Faces are
 // clean paper; edges, grooves and undersides are fine dotted lines, so it stays light.
 const BASEBOARD: { h: number; ink: number }[] = [
-  { h: 1, ink: 0.5 }, // where the wall meets the top bead
+  { h: 1, ink: 0.5 }, // where the wall meets the top bead (1-high bands are drawn as even dotted lines)
   { h: 4, ink: 0 }, // top bead
   { h: 1, ink: 0.22 }, // its rounded underside
-  { h: 1, ink: 0.55 }, // groove
+  { h: 1, ink: 0.5 }, // groove
   { h: 4, ink: 0 }, // second bead
   { h: 1, ink: 0.28 }, // its underside
   { h: 4, ink: 0.13 }, // recessed band, in shade
@@ -39,7 +39,7 @@ const BASEBOARD: { h: number; ink: number }[] = [
   { h: 8, ink: 0 }, // flat board
   { h: 1, ink: 0.45 }, // little step
   { h: 13, ink: 0 }, // lower face
-  { h: 1, ink: 0.55 }, // crisp edge at the floor
+  { h: 1, ink: 0.5 }, // crisp edge at the floor
 ];
 const WALLPAPER = {
   spacingX: 84, // between motifs in a row
@@ -57,6 +57,9 @@ const TONE = {
 const FADE = { from: 200, to: 620 };
 // A soft shadow on the floor where the cushion sits (its bottom is at the cat's y 340).
 const BED_SHADOW = { y: 340, rx: 155, ry: 13, ink: 0.22 };
+
+// Even 1D dot order for thin lines: any fraction comes out evenly spaced along a row.
+const LINE_DOTS = [0, 4, 2, 6, 1, 5, 3, 7];
 
 const smoothstep = (e0: number, e1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
@@ -140,10 +143,10 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
   const cx = cat.left + 150 * s;
   const floorY = cat.top + FLOOR_AT * s;
   // Each baseboard band as pixel rows (at least 1px, so the fine lines never vanish).
-  const bands = BASEBOARD.map((b) => ({ px: Math.max(1, Math.round(b.h * s)), ink: b.ink }));
+  const bands = BASEBOARD.map((b) => ({ px: Math.max(1, Math.round(b.h * s)), ink: b.ink, line: b.h === 1 }));
   const baseTop = floorY - bands.reduce((sum, b) => sum + b.px, 0);
-  const baseRowInk: number[] = [];
-  for (const b of bands) for (let i = 0; i < b.px; i++) baseRowInk.push(b.ink);
+  const baseRows: { ink: number; line: boolean }[] = [];
+  for (const b of bands) for (let i = 0; i < b.px; i++) baseRows.push({ ink: b.ink, line: b.line });
 
   // 1. Wallpaper motifs, drawn as shapes, then snapped to 1-bit below.
   ctx.clearRect(0, 0, w, h);
@@ -191,8 +194,21 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
       if (!ink && y >= baseTop) {
         const side = 1 - smoothstep(FADE.from * s, FADE.to * s, Math.abs(x + 0.5 - cx));
         let tone = 0;
-        if (y < floorY) tone = baseRowInk[Math.floor(y - baseTop)] ?? 0;
-        else {
+        if (y < floorY) {
+          const band = baseRows[Math.floor(y - baseTop)];
+          if (band?.line) {
+            // Thin lines use an even dot spacing along the row (the 2D pattern's rows vary
+            // in density, so the same line could come out light on one screen, dark on another).
+            ink = band.ink * side > (LINE_DOTS[x & 7] + 0.5) / 8;
+            const c = ink ? INK : PAPER;
+            d[i] = c[0];
+            d[i + 1] = c[1];
+            d[i + 2] = c[2];
+            d[i + 3] = 255;
+            continue;
+          }
+          tone = band?.ink ?? 0;
+        } else {
           tone = TONE.floor * (1 - smoothstep(0, 320 * s, y - floorY)); // floor, fading toward you
           // The bed's shadow, darkest right under its edge and fading out.
           const d = Math.hypot((x + 0.5 - cx) / (BED_SHADOW.rx * s), (y + 0.5 - (cat.top + BED_SHADOW.y * s)) / (BED_SHADOW.ry * s));
