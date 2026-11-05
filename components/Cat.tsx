@@ -344,7 +344,9 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   // ---- HAPPY / PURR STATE ----
   let happyStateTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  function startHappyState() {
+  /** The treat reward: eyes squint shut, body purr-vibrates, purr sound, for 4s.
+   *  The laser catch uses it too, with stars instead of hearts. */
+  function startHappyState(hearts = true) {
     // If already in happy state, restart it cleanly
     if (happyStateTimeout) {
       cancel(happyStateTimeout);
@@ -361,7 +363,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     // Body: purr micro-vibration
     cssCat.classList.add("cat-purring");
 
-    spawnHeartWaves(cssCat.getBoundingClientRect());
+    if (hearts) spawnHeartWaves(cssCat.getBoundingClientRect());
     playPurr(3800);
 
     happyStateTimeout = later(() => {
@@ -602,25 +604,13 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
       dot.style.transform = "translate(-50%, -50%) scale(0)";
       dot.style.opacity = "0";
       spawnStarBurst(landing.x, landing.y, landing.scale);
-      playPurr(3800);
-      purrVibration(4000); // same body vibration as the treat reward
+      startHappyState(false); // same squint, vibration and purr as the treat reward
     }, impactMs);
 
     later(() => {
       catching = false;
       stopLaser();
     }, POUNCE_MS + 150);
-  }
-
-  let vibrationTimeout: ReturnType<typeof setTimeout> | null = null;
-
-  function purrVibration(ms: number) {
-    cancel(vibrationTimeout);
-    cssCat.classList.add("cat-purring");
-    vibrationTimeout = later(() => {
-      vibrationTimeout = null;
-      cssCat.classList.remove("cat-purring");
-    }, ms);
   }
 
   function spawnStarBurst(x: number, y: number, scale: number) {
