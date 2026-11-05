@@ -943,36 +943,16 @@
   transform: scale(0.92);
 }
 
-.bag-knot {
-  width: 14px;
-  height: 8px;
-  background: var(--ink);
-  border-radius: 4px 4px 0 0;
-}
-.bag-body {
-  width: 40px;
-  height: 50px;
-  /* shaded dither texture, like the cat (scripts/dither-textures.ts) */
-  background: url("/tex/bag.png") border-box 0 0 / 40px 50px no-repeat;
-  image-rendering: pixelated;
-  border: 2.5px solid var(--ink);
-  border-radius: 3px 3px 10px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-}
-.bag-icon {
-  color: var(--paper);
-  font-size: 15px;
-  line-height: 1;
+.bag-svg {
+  display: block;
+  overflow: visible;
 }
 .bag-label-text {
   font-family: "Courier New", Courier, monospace;
-  font-size: 6px;
-  color: var(--paper);
-  letter-spacing: 0.12em;
+  font-size: 5.6px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  fill: var(--ink);
 }
 .bag-hint {
   font-family: "Courier New", Courier, monospace;

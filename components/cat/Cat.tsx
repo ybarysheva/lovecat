@@ -61,11 +61,51 @@ export default function Cat({ to, from, notes, footer, track }: Props) {
 
       {/* TREAT BAG — fixed top-right corner */}
       <div className="treat-bag" data-treat role="button" tabIndex={0} aria-label="Give the cat a treat">
-        <div className="bag-knot"></div>
-        <div className="bag-body">
-          <span className="bag-icon">★</span>
-          <span className="bag-label-text">TREATS</span>
-        </div>
+        {/* A stand-up treat pouch: sealed top with a hanging slot, zip line, label, flat bottom. */}
+        <svg className="bag-svg" width="44" height="58" viewBox="0 0 44 58" aria-hidden="true">
+          <defs>
+            <pattern id={`${ditherId}-bag`} width="44" height="58" patternUnits="userSpaceOnUse">
+              <image href="/tex/bag.png" width="44" height="58" style={{ imageRendering: "pixelated" }} />
+            </pattern>
+          </defs>
+          {/* body: straight sides flaring a touch, flat bottom with soft corners */}
+          <path
+            d="M3 1.5 H41 L42.5 51 Q42.5 56.5 38 56.5 H6 Q1.5 56.5 1.5 51 Z"
+            fill={`url(#${ditherId}-bag)`}
+            stroke="var(--ink)"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          {/* heat-sealed top band with crimp ticks, and the hanging slot */}
+          <path d="M3 10 H41" stroke="var(--ink)" strokeWidth="1.2" />
+          <path d="M6 3v5M9 3v5M12 3v5M32 3v5M35 3v5M38 3v5" stroke="var(--paper)" strokeWidth="0.8" opacity="0.55" />
+          <rect
+            x="16"
+            y="3.5"
+            width="12"
+            height="3.5"
+            rx="1.75"
+            fill="var(--paper)"
+            stroke="var(--ink)"
+            strokeWidth="1"
+          />
+          {/* zip line */}
+          <path d="M4 13 H40" stroke="var(--paper)" strokeWidth="0.7" strokeDasharray="1.5 1" opacity="0.7" />
+          {/* label: a little paw over TREATS */}
+          <rect x="8" y="21" width="28" height="20" rx="2.5" fill="var(--paper)" stroke="var(--ink)" strokeWidth="1" />
+          <g fill="var(--ink)">
+            <ellipse cx="22" cy="29.4" rx="2.6" ry="2.1" />
+            <circle cx="18.9" cy="26.6" r="1.05" />
+            <circle cx="20.8" cy="25.2" r="1.05" />
+            <circle cx="23.2" cy="25.2" r="1.05" />
+            <circle cx="25.1" cy="26.6" r="1.05" />
+          </g>
+          <text x="22" y="37.6" textAnchor="middle" className="bag-label-text">
+            TREATS
+          </text>
+          {/* the gusset fold the bag stands on */}
+          <path d="M3 49.5 Q22 52.5 41 49.5" fill="none" stroke="var(--paper)" strokeWidth="0.8" opacity="0.6" />
+        </svg>
         <span className="bag-hint">[ treat ]</span>
       </div>
 
