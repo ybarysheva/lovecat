@@ -191,7 +191,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
         d: `M0 0 Q ${(stalk * 0.5).toFixed(1)} ${curl.toFixed(1)} ${stalk.toFixed(1)} 0`,
         fill: "none",
         stroke: INK,
-        "stroke-width": 1.1,
+        "stroke-width": 0.85,
         "stroke-linecap": "round",
       }),
     );
@@ -234,7 +234,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     bareAt?: { at: number; half: number },
   ): Strand {
     const group = el("g", {});
-    const stem = el("path", { fill: "none", stroke: INK, "stroke-width": 1.5, "stroke-linecap": "round", "stroke-linejoin": "round" });
+    const stem = el("path", { fill: "none", stroke: INK, "stroke-width": 1.2, "stroke-linecap": "round", "stroke-linejoin": "round" });
     group.appendChild(stem);
     const rnd = random(seed);
     const leaves: Leaf[] = [];
