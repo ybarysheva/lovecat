@@ -42,7 +42,7 @@ On Vercel, if the Redis env vars are missing, creating a cat returns a clear "St
 ## Where things are
 
 - `components/Cat.tsx` and `components/cat.css`: the cat (markup, behaviour, sounds).
-- `scripts/dither-textures.mjs` and `public/tex/`: the cat's shaded 1-bit textures (Obra Dinn-style: each part lit from the upper left and ordered-dithered into ink and paper). After changing a part's size or position in `cat.css`, run `npm run textures` to regenerate them.
+- `scripts/dither-textures.mjs` and `public/tex/`: the shaded 1-bit textures for the cat, treat bag and laser pointer (Obra Dinn-style: each part lit from the upper left and ordered-dithered into ink and paper). After changing a part's size or position in `cat.css`, run `npm run textures` to regenerate them.
 - `components/tail.ts`: the tail's shape and swish (a tapered curve with a wave running along it; faster during laser play).
 - `components/Builder.tsx`: the builder page.
 - `lib/starter-notes.ts`: the notes senders can pick from. Edit freely; existing cats keep their own copy.

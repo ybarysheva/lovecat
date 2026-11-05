@@ -101,6 +101,23 @@ const PARTS = [
     tone: (u, v) => clamp(0.95 - 1.6 * (v - 0.45) - 0.4 * ((u * 340) / 300 - 0.75)),
     scale: 3, // drawn as an SVG pattern image, so store it larger instead of relying on pixelated scaling
   },
+  // Props outside the cat (their own coordinates; sizes are their border boxes).
+  // The treat bag is a soft sack, lit from the upper left.
+  { name: "bag", x: 0, y: 0, w: 40, h: 50, material: "fur", tone: (u, v) => sphere(u, v * 0.85 + 0.08, 0.9) },
+  {
+    // The laser pointer is a cylinder: lit down its left side.
+    name: "laser",
+    x: 0,
+    y: 0,
+    w: 14,
+    h: 48,
+    material: "fur",
+    tone: (u, v) => {
+      const nx = (u - 0.5) * 2;
+      const nz = Math.sqrt(Math.max(0, 1 - nx * nx));
+      return clamp((0.12 + 0.88 * Math.max(0, nx * L[0] + nz * L[2])) * (1 - 0.15 * v));
+    },
+  },
 ];
 
 function render(part) {
