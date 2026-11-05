@@ -783,6 +783,26 @@
   letter-spacing: 0.04em;
 }
 
+/* The occasional fly (components/fly.ts): positioned and turned from JS, wings flutter. */
+.fly {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 140; /* over the cat and props, under the speech bubble */
+  pointer-events: none;
+  will-change: transform;
+}
+.fly svg { display: block; overflow: visible; }
+.fly-wings {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flutter 0.07s linear infinite;
+}
+@keyframes flutter {
+  0%, 100% { transform: scaleY(1); }
+  50%      { transform: scaleY(0.4); }
+}
+
 /* Red laser dot */
 .laser-dot {
   position: fixed;

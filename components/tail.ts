@@ -12,6 +12,8 @@ export const TAIL_SWISH = {
   amplitude: 20, // degrees of bend at the tip
   periodMs: 3200, // one swish, at rest
   alertPeriodMs: 650, // one swish while the laser is on
+  crazyPeriodMs: 360, // one swish while a fly is around: the tail goes wild
+  crazyAmplitude: 30,
 };
 
 const rad = (deg: number) => (deg * Math.PI) / 180;

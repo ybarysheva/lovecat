@@ -4,6 +4,7 @@ import { useEffect, useId, useRef } from "react";
 import { drawRoom } from "./room";
 import { TAIL_SWISH, tailPath } from "./tail";
 import { createVines } from "./vines";
+import { createFlies } from "./fly";
 import "./cat.css";
 
 type Props = {
@@ -733,18 +734,44 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     else startLaser(e.clientX, e.clientY);
   };
 
+  // ---- FLY ----
+  // Now and then a fly buzzes around; the cat's pupils follow it and its tail goes wild.
+  // No flies while the laser is on (a visiting fly leaves when it's turned on).
+  const flies = createFlies({
+    root,
+    catRect: () => cssCat.getBoundingClientRect(),
+    allowed: () => !laserDot && !catching,
+    onMove: (x, y) => {
+      if (!laserDot) lookAt(x, y);
+    },
+    onEnd: () => {
+      if (laserDot) return;
+      eyeL.style.translate = "";
+      eyeR.style.translate = "";
+    },
+    later,
+  });
+
   // ---- TAIL ----
-  // Continuous swish; faster while the laser is on (the cat's "tail-alert" state). The
-  // phase is accumulated so changing speed never makes the tail jump.
+  // Continuous swish; faster while the laser is on (the cat's "tail-alert" state), wild
+  // while a fly is around. The phase and size are eased so the tail never jumps.
   let tailPhase = 0;
+  let tailAmp: number = TAIL_SWISH.amplitude;
   let tailLast = performance.now();
   const vines = createVines(root.querySelector<SVGSVGElement>(".cat-vines")!, "vines-" + Math.random().toString(36).slice(2));
   vines.layout(root.getBoundingClientRect().width);
   let tailFrame = requestAnimationFrame(function swish(now) {
-    const period = cssCat.classList.contains("tail-alert") ? TAIL_SWISH.alertPeriodMs : TAIL_SWISH.periodMs;
-    tailPhase += ((now - tailLast) / period) * Math.PI * 2;
+    const crazy = flies.active;
+    const period = crazy
+      ? TAIL_SWISH.crazyPeriodMs
+      : cssCat.classList.contains("tail-alert")
+        ? TAIL_SWISH.alertPeriodMs
+        : TAIL_SWISH.periodMs;
+    const dt = now - tailLast;
+    tailPhase += (dt / period) * Math.PI * 2;
+    tailAmp += ((crazy ? TAIL_SWISH.crazyAmplitude : TAIL_SWISH.amplitude) - tailAmp) * Math.min(1, dt / 300);
     tailLast = now;
-    tailEl.setAttribute("d", tailPath(tailPhase));
+    tailEl.setAttribute("d", tailPath(tailPhase, tailAmp));
     vines.frame(now);
     tailFrame = requestAnimationFrame(swish);
   });
@@ -790,6 +817,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   return () => {
     disposed = true;
     cancelAnimationFrame(tailFrame);
+    flies.stop();
     bgObserver.disconnect();
     timers.forEach(clearTimeout);
     timers.clear();
@@ -801,6 +829,6 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     document.removeEventListener("keydown", onKey);
     document.removeEventListener("pointermove", onPointer);
     document.removeEventListener("pointerdown", onPointer);
-    root.querySelectorAll(".treat-flying, .heart-particle, .star-particle, .laser-dot").forEach((el) => el.remove());
+    root.querySelectorAll(".treat-flying, .heart-particle, .star-particle, .laser-dot, .fly").forEach((el) => el.remove());
   };
 }
