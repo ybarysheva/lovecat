@@ -21,14 +21,14 @@ const BAYER8 = [
 ];
 
 // The swag across the top-left corner (CSS px from the top-left of the screen): it comes
-// in from the left edge, dips, and rises back up to the top edge.
+// in from the left edge and sags in an even, rounded curve before rising to the top edge.
 const SWAG = {
-  start: { x: -10, y: 38 },
-  dip: { x: 97, y: 148 }, // curve control point (the curve itself bottoms out around y 82)
-  end: { x: 128, y: -6 },
-  breathe: 0, // the swag stays still (set above 0 to let the dip rise and fall)
+  start: { x: -10, y: 30 },
+  end: { x: 150, y: -6 },
+  sag: 66, // how far the middle hangs below the straight line between the ends
+  breathe: 0, // the swag stays still (set above 0 to let it rise and fall)
   periodMs: 7000,
-  leafEvery: 17,
+  leafEvery: 15,
 };
 
 // Hanging strands: where they hang from (px from the left, given the screen width), how
@@ -41,9 +41,11 @@ type StrandSpec = {
   periodMs: number;
   phase: number;
   seed: number;
+  fromSwag?: boolean; // hang from the swag's lowest point instead of the top edge
+  bareTop?: number; // px at the top with no leaves (where it joins the swag)
 };
 const STRANDS: StrandSpec[] = [
-  { from: () => 84, length: 265, lean: 2, wander: 11, periodMs: 5600, phase: 0, seed: 11 },
+  { from: () => 0, fromSwag: true, bareTop: 14, length: 215, lean: 2, wander: 11, periodMs: 5600, phase: 0, seed: 11 },
   { from: (w) => Math.min(w * 0.7, w - 95), length: 105, lean: -3, wander: 9, periodMs: 4700, phase: 2.1, seed: 29 },
 ];
 // Only the lower ends of the strands move: the sway fades in over the last `swayFrom` of
@@ -121,29 +123,27 @@ function hangingSpine(x: number, y: number, spec: StrandSpec, t: number): Point[
   return pts;
 }
 
-/** Points along the corner swag (a gentle curve with a little waviness), breathing over time. */
+/** Points along the corner swag: an even sag between its two ends (a parabola off the
+ *  straight line between them), rising and falling a little over time if `breathe` > 0. */
 function swagSpine(t: number): Point[] {
-  const breathe = 1 + SWAG.breathe * Math.sin((t / SWAG.periodMs) * Math.PI * 2);
-  const p0 = SWAG.start;
-  const p2 = SWAG.end;
-  const c = { x: SWAG.dip.x, y: SWAG.dip.y * breathe };
-  const n = 40;
+  const sag = SWAG.sag * (1 + SWAG.breathe * Math.sin((t / SWAG.periodMs) * Math.PI * 2));
+  const { start: p0, end: p1 } = SWAG;
+  const n = 48;
   const pts: Point[] = [];
   for (let i = 0; i <= n; i++) {
     const s = i / n;
-    const u = 1 - s;
-    let x = u * u * p0.x + 2 * u * s * c.x + s * s * p2.x;
-    let y = u * u * p0.y + 2 * u * s * c.y + s * s * p2.y;
-    const dx = 2 * u * (c.x - p0.x) + 2 * s * (p2.x - c.x);
-    const dy = 2 * u * (c.y - p0.y) + 2 * s * (p2.y - c.y);
-    const len = Math.hypot(dx, dy) || 1;
-    // A small wobble across the curve so it isn't a perfect arc.
-    const wobble = 2.5 * Math.sin(s * Math.PI * 5);
-    x += (-dy / len) * wobble;
-    y += (dx / len) * wobble;
+    const x = p0.x + (p1.x - p0.x) * s;
+    const y = p0.y + (p1.y - p0.y) * s + sag * 4 * s * (1 - s);
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y + sag * 4 * (1 - 2 * s);
     pts.push({ x, y, angle: Math.atan2(dy, dx) });
   }
   return pts;
+}
+
+/** The swag's lowest point, where the long strand hangs from. */
+function lowest(pts: Point[]): Point {
+  return pts.reduce((low, p) => (p.y > low.y ? p : low), pts[0]);
 }
 
 /** The point (and direction) at arc length `at` along a spine. */
@@ -172,12 +172,13 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
   let swag: Strand | null = null;
   let strands: { strand: Strand; spec: StrandSpec }[] = [];
 
-  function makeLeaf(group: SVGGElement, at: number, side: 1 | -1, rnd: () => number, droop: number): Leaf {
-    const size = LEAF.min + rnd() * (LEAF.max - LEAF.min);
+  function makeLeaf(group: SVGGElement, at: number, side: 1 | -1, rnd: () => number, droop: number, even = false): Leaf {
+    // Even leaves (the swag) stay close to one size and shape; the strands vary a lot.
+    const size = even ? 12 + rnd() * 3 : LEAF.min + rnd() * (LEAF.max - LEAF.min);
     // Some leaves face us (wide), some are turned away (narrow).
-    const wide = rnd() < 0.25 ? 0.22 + rnd() * 0.1 : 0.4 + rnd() * 0.16;
-    const lopsided = (rnd() - 0.5) * 0.35;
-    const bend = (rnd() - 0.5) * 0.18;
+    const wide = even ? 0.42 + rnd() * 0.08 : rnd() < 0.25 ? 0.22 + rnd() * 0.1 : 0.4 + rnd() * 0.16;
+    const lopsided = (rnd() - 0.5) * (even ? 0.15 : 0.35);
+    const bend = (rnd() - 0.5) * (even ? 0.08 : 0.18);
     // A short curved stalk from the vine to the leaf.
     const stalk = 3 + rnd() * 6;
     const curl = (rnd() - 0.5) * 6;
@@ -215,24 +216,32 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
       el: g,
       at,
       side,
-      spread: 0.7 + rnd() * 0.7, // how far the leaf stands out from the vine (radians)
-      tilt: (rnd() - 0.5) * 0.7, // plus a bit of its own angle
-      droop: droop * (0.6 + rnd() * 0.8),
+      spread: even ? 0.9 + rnd() * 0.3 : 0.7 + rnd() * 0.7, // how far the leaf stands out from the vine (radians)
+      tilt: (rnd() - 0.5) * (even ? 0.3 : 0.7), // plus a bit of its own angle
+      droop: droop * (even ? 0.9 + rnd() * 0.2 : 0.6 + rnd() * 0.8),
     };
   }
 
-  function makeStrand(length: number, leafEvery: number, seed: number, droop: number): Strand {
+  function makeStrand(length: number, leafEvery: number, seed: number, droop: number, even = false, bareTop = 0): Strand {
     const group = el("g", {});
     const stem = el("path", { fill: "none", stroke: INK, "stroke-width": 1.5, "stroke-linecap": "round", "stroke-linejoin": "round" });
     group.appendChild(stem);
     const rnd = random(seed);
     const leaves: Leaf[] = [];
     let side: 1 | -1 = rnd() < 0.5 ? 1 : -1;
-    // Irregular spacing: mostly alternating sides, now and then two close together.
-    for (let at = 4 + rnd() * leafEvery; at < length - 3; ) {
-      leaves.push(makeLeaf(group, at, side, rnd, droop));
-      if (rnd() < 0.8) side = side === 1 ? -1 : 1;
-      at += rnd() < 0.2 ? 4 + rnd() * 5 : leafEvery * (0.6 + rnd() * 0.9);
+    if (even) {
+      // Even: steady spacing, strictly alternating sides, similar sizes.
+      for (let at = leafEvery * 0.6; at < length - 3; at += leafEvery * (0.92 + rnd() * 0.16)) {
+        leaves.push(makeLeaf(group, at, side, rnd, droop, true));
+        side = side === 1 ? -1 : 1;
+      }
+    } else {
+      // Irregular: mostly alternating sides, now and then two close together.
+      for (let at = bareTop + 4 + rnd() * leafEvery; at < length - 3; ) {
+        leaves.push(makeLeaf(group, at, side, rnd, droop));
+        if (rnd() < 0.8) side = side === 1 ? -1 : 1;
+        at += rnd() < 0.2 ? 4 + rnd() * 5 : leafEvery * (0.6 + rnd() * 0.9);
+      }
     }
     svg.appendChild(group);
     return { stem, leaves };
@@ -246,8 +255,11 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     defs.appendChild(ditherPattern(shade, 0.72));
     svg.appendChild(defs);
     // Hanging strands first, so the swag's leaves sit over the top of them.
-    strands = STRANDS.map((spec) => ({ spec, strand: makeStrand(spec.length, STRAND.leafEvery, spec.seed, 0.3) }));
-    swag = makeStrand(190, SWAG.leafEvery, 7, 0.55);
+    strands = STRANDS.map((spec) => ({
+      spec,
+      strand: makeStrand(spec.length, STRAND.leafEvery, spec.seed, 0.3, false, spec.bareTop ?? 0),
+    }));
+    swag = makeStrand(220, SWAG.leafEvery, 7, 0.5, true);
   }
 
   function place(strand: Strand, pts: Point[]) {
@@ -271,8 +283,13 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
 
   function frame(t: number) {
     if (!swag) return;
-    place(swag, swagSpine(t));
-    for (const { strand, spec } of strands) place(strand, hangingSpine(spec.from(width), -6, spec, t));
+    const swagPts = swagSpine(t);
+    place(swag, swagPts);
+    const low = lowest(swagPts);
+    for (const { strand, spec } of strands) {
+      if (spec.fromSwag) place(strand, hangingSpine(low.x, low.y, spec, t));
+      else place(strand, hangingSpine(spec.from(width), -6, spec, t));
+    }
   }
 
   return { layout, frame };
