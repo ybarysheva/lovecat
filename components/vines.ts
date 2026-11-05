@@ -55,7 +55,7 @@ const STRANDS: StrandSpec[] = [
 const TOP = -6; // strands hang from just above the top edge
 const STRAND = { amplitude: 4, swayFrom: 0.55, leafEvery: 17, segment: 6 }; // degrees, fraction, px, px
 
-const LEAF = { min: 8, max: 18, stroke: 1.1 };
+const LEAF = { min: 8, max: 18, stroke: 0.65 }; // outline width: thin, so leaves read light
 
 // A small seeded random generator, so the leaves land in the same places every time.
 function random(seed: number) {
