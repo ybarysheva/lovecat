@@ -18,6 +18,8 @@ const K = 1.4;
 
 // The swag across the top-left corner (CSS px from the top-left of the screen): it comes
 // in from the left edge and sags in an even, rounded curve before rising to the top edge.
+// On wide screens it slides right, halfway toward the cat, with its left end hung from the
+// top edge instead (so it doesn't float in mid-air).
 const SWAG = {
   start: { x: -10 * K, y: 30 * K },
   end: { x: 150 * K, y: -6 },
@@ -128,10 +130,13 @@ function hangingSpine(x: number, y: number, spec: StrandSpec, t: number): Point[
   return pts;
 }
 
-/** Points along the corner swag: an even sag between its two ends (a parabola off the
- *  straight line between them). */
-function swagSpine(): Point[] {
-  const { start: p0, end: p1, sag } = SWAG;
+/** Points along the corner swag, moved `shift` px right: an even sag between its two ends
+ *  (a parabola off the straight line between them). */
+function swagSpine(shift = 0): Point[] {
+  const { sag } = SWAG;
+  const lift = Math.min(1, shift / 60); // once moved off the left edge, hang that end from the top
+  const p0 = { x: SWAG.start.x + shift, y: SWAG.start.y + (TOP - SWAG.start.y) * lift };
+  const p1 = { x: SWAG.end.x + shift, y: SWAG.end.y };
   const n = 48;
   const pts: Point[] = [];
   for (let i = 0; i <= n; i++) {
@@ -173,8 +178,9 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
   const lit = `${idPrefix}-leaf-lit`;
   const shade = `${idPrefix}-leaf-shade`;
   let width = 0;
-  const swagPts = swagSpine(); // the swag never moves, so its shape is worked out once
-  const low = lowest(swagPts);
+  let catLeft = 0;
+  let swagPts = swagSpine(); // the swag doesn't move, so its shape is worked out per layout
+  let low = lowest(swagPts);
   let swag: Strand | null = null;
   let strands: { strand: Strand; spec: StrandSpec }[] = [];
 
@@ -265,8 +271,10 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
       // Irregular: mostly alternating sides, now and then two close together.
       for (let at = 4 + rnd() * leafEvery; at < length - 3;) {
         if (bareAt && Math.abs(at - bareAt.at) < bareAt.half) {
+          // Skip past the bare stretch. (Not `continue`: rounding can leave `at` a hair
+          // inside it, which would skip to the same spot forever.)
           at = bareAt.at + bareAt.half;
-          continue;
+          if (at >= length - 3) break;
         }
         leaves.push(makeLeaf(group, at, side, rnd, droop));
         if (rnd() < 0.8) side = side === 1 ? -1 : 1;
@@ -277,9 +285,16 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     return { stem, leaves };
   }
 
-  function layout(w: number) {
-    if (swag && w === width) return; // only a width change moves anything
+  /** Lays the vines out for a scene `w` px wide with the cat's drawing starting at `catX`. */
+  function layout(w: number, catX: number) {
+    if (swag && w === width && catX === catLeft) return; // nothing that matters has changed
     width = w;
+    catLeft = catX;
+    // Slide the swag (and the strand trailing from it) halfway from its corner toward the
+    // cat; on phones the cat is already close, so it stays in the corner.
+    const shift = Math.max(0, (catX - lowest(swagSpine()).x) / 2);
+    swagPts = swagSpine(shift);
+    low = lowest(swagPts);
     while (svg.firstChild) svg.removeChild(svg.firstChild);
     const defs = el("defs", {});
     defs.appendChild(ditherPattern(lit, 0.42));

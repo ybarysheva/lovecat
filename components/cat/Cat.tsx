@@ -242,9 +242,9 @@ function startCat(root: HTMLElement, getNotes: () => string[], place?: Place): (
   let bgTimer: Timer | null = null;
   function drawBackground() {
     const scene = root.getBoundingClientRect();
-    vines.layout(scene.width);
-    if (reduceMotion) vines.frame(0); // the animation loop is off, so place them here
     const box = catBox.getBoundingClientRect();
+    vines.layout(scene.width, box.left - scene.left);
+    if (reduceMotion) vines.frame(0); // the animation loop is off, so place them here
     drawRoom(bgCanvas, scene.width, scene.height, {
       left: box.left - scene.left,
       top: box.top - scene.top,
