@@ -8,7 +8,7 @@ const INK = [0x1c, 0x14, 0x10] as const;
 const PAPER = [0xd4, 0xc5, 0xa9] as const;
 // The wallpaper's dots are printed in a faded ink, so the pattern reads light without
 // losing any dots. MOTIF_FADE is how far toward the paper color (0 = full ink, 1 = paper).
-const MOTIF_FADE = 0.6;
+const MOTIF_FADE = 0.72;
 const MOTIF_INK = INK.map((c, i) => Math.round(c + (PAPER[i] - c) * MOTIF_FADE)) as unknown as typeof INK;
 
 const BAYER8 = [
