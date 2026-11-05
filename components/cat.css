@@ -118,14 +118,23 @@
 }
 
 /* ---- CAT WRAPPERS ---- */
-.cat-float { animation: float 2.8s ease-in-out infinite; }
+/* The cat sits on its cushion (no floating); it breathes instead, very gently:
+   the body swells upward from its base and the head rises with it. Uses the
+   `scale`/`translate` properties so it never fights the transforms used for the
+   head tilt, purr and squish. */
+.cat-body { animation: breatheBody 3.6s ease-in-out infinite; transform-origin: 50% 100%; }
+.cat-face-group { animation: breatheHead 3.6s ease-in-out infinite; }
 
 .cat-squish { transform-origin: center bottom; cursor: pointer; }
 .cat-squish.squishing { animation: squish 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-12px); }
+@keyframes breatheBody {
+  0%, 100% { scale: 1 1; }
+  45%      { scale: 1.006 1.02; }
+}
+@keyframes breatheHead {
+  0%, 100% { translate: 0 0; }
+  45%      { translate: 0 -2px; }
 }
 @keyframes squish {
   0%   { transform: scaleX(1)    scaleY(1);    }

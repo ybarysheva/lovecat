@@ -59,65 +59,63 @@ export default function Cat({ to, from, notes, footer }: Props) {
         </div>
 
         <div className="cat-hover">
-          <div className="cat-float">
-            <div className="cat-squish" data-squish role="button" aria-label="Pet the cat">
-              <div className="css-cat">
-                <div className="cat-cloud"></div>
+          <div className="cat-squish" data-squish role="button" aria-label="Pet the cat">
+            <div className="css-cat">
+              <div className="cat-cloud"></div>
 
-                {/* Tail: one tapered curve, animated in startCat, filled with its shaded dither
-                    texture (public/tex/tail.png, in the cat's own coordinates). */}
-                <svg className="cat-tail" viewBox="0 0 300 340" aria-hidden="true">
-                  <defs>
-                    <pattern id={ditherId} width="340" height="340" patternUnits="userSpaceOnUse">
-                      <image href="/tex/tail.png" width="340" height="340" preserveAspectRatio="none" style={{ imageRendering: "pixelated" }} />
-                    </pattern>
-                  </defs>
-                  <path className="cat-tail-path" d={tailPath(0)} fill={`url(#${ditherId})`} />
-                </svg>
+              {/* Tail: one tapered curve, animated in startCat, filled with its shaded dither
+                  texture (public/tex/tail.png, in the cat's own coordinates). */}
+              <svg className="cat-tail" viewBox="0 0 300 340" aria-hidden="true">
+                <defs>
+                  <pattern id={ditherId} width="340" height="340" patternUnits="userSpaceOnUse">
+                    <image href="/tex/tail.png" width="340" height="340" preserveAspectRatio="none" style={{ imageRendering: "pixelated" }} />
+                  </pattern>
+                </defs>
+                <path className="cat-tail-path" d={tailPath(0)} fill={`url(#${ditherId})`} />
+              </svg>
 
-                <div className="cat-body">
-                  <div className="cat-stripe cat-stripe--1"></div>
-                  <div className="cat-stripe cat-stripe--2"></div>
-                  <div className="cat-stripe cat-stripe--3"></div>
-                  <div className="cat-stripe cat-stripe--4"></div>
-                  <div className="cat-belly"></div>
-                </div>
+              <div className="cat-body">
+                <div className="cat-stripe cat-stripe--1"></div>
+                <div className="cat-stripe cat-stripe--2"></div>
+                <div className="cat-stripe cat-stripe--3"></div>
+                <div className="cat-stripe cat-stripe--4"></div>
+                <div className="cat-belly"></div>
+              </div>
 
-                <div className="cat-paw cat-paw--l"></div>
-                <div className="cat-paw cat-paw--r"></div>
+              <div className="cat-paw cat-paw--l"></div>
+              <div className="cat-paw cat-paw--r"></div>
 
-                {/* Face group: ears + head animate together on treat catch */}
-                <div className="cat-face-group">
-                  <div className="cat-ear cat-ear--l"><div className="cat-ear-inner"></div></div>
-                  <div className="cat-ear cat-ear--r"><div className="cat-ear-inner"></div></div>
+              {/* Face group: ears + head animate together on treat catch */}
+              <div className="cat-face-group">
+                <div className="cat-ear cat-ear--l"><div className="cat-ear-inner"></div></div>
+                <div className="cat-ear cat-ear--r"><div className="cat-ear-inner"></div></div>
 
-                  <div className="cat-head">
-                    <div className="cat-head-stripe cat-head-stripe--c"></div>
-                    <div className="cat-head-stripe cat-head-stripe--l"></div>
-                    <div className="cat-head-stripe cat-head-stripe--r"></div>
-                    <div className="cat-blush cat-blush--l"></div>
-                    <div className="cat-blush cat-blush--r"></div>
-                    {/* Eye bg rings (painted before eyes = behind eyes) */}
-                    <div className="cat-eye-bg cat-eye-bg--l"></div>
-                    <div className="cat-eye-bg cat-eye-bg--r"></div>
-                    <div className="cat-eye-l"></div>
-                    <div className="cat-eye-r"></div>
-                    {/* Muzzle patch behind nose/mouth */}
-                    <div className="cat-muzzle"></div>
-                    <div className="cat-nose"></div>
-                    <div className="cat-mouth"></div>
-                    <div className="cat-whisker cat-whisker--l1"></div>
-                    <div className="cat-whisker cat-whisker--l2"></div>
-                    <div className="cat-whisker cat-whisker--l3"></div>
-                    <div className="cat-whisker cat-whisker--r1"></div>
-                    <div className="cat-whisker cat-whisker--r2"></div>
-                    <div className="cat-whisker cat-whisker--r3"></div>
-                  </div>
+                <div className="cat-head">
+                  <div className="cat-head-stripe cat-head-stripe--c"></div>
+                  <div className="cat-head-stripe cat-head-stripe--l"></div>
+                  <div className="cat-head-stripe cat-head-stripe--r"></div>
+                  <div className="cat-blush cat-blush--l"></div>
+                  <div className="cat-blush cat-blush--r"></div>
+                  {/* Eye bg rings (painted before eyes = behind eyes) */}
+                  <div className="cat-eye-bg cat-eye-bg--l"></div>
+                  <div className="cat-eye-bg cat-eye-bg--r"></div>
+                  <div className="cat-eye-l"></div>
+                  <div className="cat-eye-r"></div>
+                  {/* Muzzle patch behind nose/mouth */}
+                  <div className="cat-muzzle"></div>
+                  <div className="cat-nose"></div>
+                  <div className="cat-mouth"></div>
+                  <div className="cat-whisker cat-whisker--l1"></div>
+                  <div className="cat-whisker cat-whisker--l2"></div>
+                  <div className="cat-whisker cat-whisker--l3"></div>
+                  <div className="cat-whisker cat-whisker--r1"></div>
+                  <div className="cat-whisker cat-whisker--r2"></div>
+                  <div className="cat-whisker cat-whisker--r3"></div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+      </div>
 
         <p className="cat-label">{to ? `[ pet the cat to receive love, ${to} ]` : "[ pet the cat to receive love ]"}</p>
         {from && <p className="cat-from">with love from {from}</p>}
