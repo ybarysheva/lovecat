@@ -212,7 +212,7 @@ export default function Builder() {
         </p>
         <h1>Send someone a cat that says nice things</h1>
         <p className="lede">
-          Pick some notes or write your own. They pet the cat, and the cat tells them one at a time.
+          Pick some messages or write your own.
         </p>
 
         <section className="panel">
@@ -225,7 +225,6 @@ export default function Builder() {
               value={draft.to}
               onChange={(e) => update({ to: e.target.value })}
               maxLength={LIMITS.name}
-              placeholder="Alex"
               autoComplete="off"
             />
           </label>
@@ -238,7 +237,6 @@ export default function Builder() {
               value={draft.from}
               onChange={(e) => update({ from: e.target.value })}
               maxLength={LIMITS.name}
-              placeholder="Sam"
               autoComplete="off"
             />
           </label>
