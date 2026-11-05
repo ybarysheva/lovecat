@@ -29,6 +29,7 @@ const WALLPAPER = {
 // How much ink, 0 (paper) to 1 (solid).
 const TONE = {
   motif: 0.32, // wallpaper is printed at about a third density, so it stays light
+  fishLine: 0.5, // fish bone lines are dotted at half density, so they're as light as the paws
   baseboard: 0.2,
   floor: 0.1,
 };
@@ -62,13 +63,13 @@ function drawPaw(ctx: CanvasRenderingContext2D, x: number, y: number, size: numb
 /**
  * A fish skeleton in fine lines, pointing left: outlined head with an eye, a spine,
  * ribs angled back from it, and a forked tail. Drawn in the canvas's current stroke
- * color; the wallpaper prints these as solid thin ink lines (not dithered).
+ * color; the wallpaper prints these as fine dotted lines, about as light as the paw prints.
  */
 function drawFishBone(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
   const half = size / 2;
   const headEnd = x - half + size * 0.3;
   const tailStart = x + half - size * 0.17;
-  ctx.lineWidth = Math.max(1.2, size * 0.042);
+  ctx.lineWidth = Math.max(1.6, size * 0.055);
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.beginPath();
@@ -121,7 +122,7 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
   // 1. Wallpaper motifs, drawn as shapes, then snapped to 1-bit below.
   ctx.clearRect(0, 0, w, h);
   // Paw prints are filled in black (printed as a light dither); fish bones are drawn in
-  // red (printed as solid thin lines). The color only tells the two apart below.
+  // red (printed as dotted lines). The color only tells the two apart below.
   ctx.fillStyle = "#000";
   ctx.strokeStyle = "#f00";
   const sx = WALLPAPER.spacingX * s;
@@ -158,8 +159,9 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
       const motif = motifs[i + 3];
-      const isLine = motifs[i] > 127; // red: fish bone lines, printed solid
-      let ink = isLine ? motif > 110 : motif > 127 && TONE.motif > (row[x & 7] + 0.5) / 64;
+      const isLine = motifs[i] > 127; // red: fish bone lines
+      const threshold = (row[x & 7] + 0.5) / 64;
+      let ink = isLine ? motif > 110 && TONE.fishLine > threshold : motif > 127 && TONE.motif > threshold;
       if (!ink && y >= baseTop) {
         const side = 1 - smoothstep(FADE.from * s, FADE.to * s, Math.abs(x + 0.5 - cx));
         let tone = 0;
