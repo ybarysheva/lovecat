@@ -6,7 +6,7 @@ export default function NotFound() {
       <h1>This cat wandered off</h1>
       <p>The link might be missing a few characters. Check that it was copied in full.</p>
       <Link className="btn" href="/make">
-        Make your own cat
+        Send someone a cat
       </Link>
     </main>
   );

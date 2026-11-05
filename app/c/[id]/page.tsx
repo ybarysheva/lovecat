@@ -42,5 +42,5 @@ export default async function CatPage({ params }: Params) {
     );
   }
   if (!card) notFound();
-  return <Cat to={card.to} from={card.from} notes={card.notes} footer={<Link href="/make">make your own cat</Link>} />;
+  return <Cat to={card.to} from={card.from} notes={card.notes} footer={<Link href="/make">send someone a cat</Link>} />;
 }

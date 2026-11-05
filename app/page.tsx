@@ -14,7 +14,7 @@ export default function Home() {
       notes={DEMO_NOTES}
       footer={
         <Link className="cat-cta" href="/make">
-          make your own cat
+          send someone a cat
         </Link>
       }
     />

@@ -10,7 +10,7 @@ type Props = {
   to: string | null;
   from: string | null;
   notes: string[];
-  /** Shown at the bottom of the scene: "make your own" on a cat page, "back to editing" in preview. */
+  /** Shown at the bottom of the scene: "send someone a cat" on a cat page, "back to editing" in preview. */
   footer?: React.ReactNode;
 };
 

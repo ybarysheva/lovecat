@@ -237,7 +237,7 @@
   text-align: center;
 }
 
-/* "make your own" link: bottom of the viewport, or below the cat when the page
+/* "send someone a cat" link: bottom of the viewport, or below the cat when the page
    scrolls (the scene's bottom padding keeps room for it). Above the vignette. */
 .cat-footer {
   position: absolute;
@@ -260,7 +260,7 @@
 }
 .cat-footer a:hover, .cat-footer button:hover { text-decoration: underline; }
 
-/* Landing page: a bigger "make your own cat" button, pinned to the bottom of the
+/* Landing page: a bigger "send someone a cat" button, pinned to the bottom of the
    screen so it's always visible. The padding keeps room for it. */
 .cat-scene:has(.cat-cta) { padding-bottom: 96px; }
 .cat-scene:has(.cat-cta) .cat-footer { position: fixed; }
