@@ -41,15 +41,18 @@ type StrandSpec = {
   periodMs: number;
   phase: number;
   seed: number;
-  fromSwag?: boolean; // hang from the swag's lowest point instead of the top edge
-  bareTop?: number; // px at the top with no leaves (where it joins the swag)
+  // Comes down from the top edge to the swag's lowest point, then hangs on from there, so it
+  // reads as one vine crossing the swag. `length` is the part below the swag.
+  throughSwag?: boolean;
+  bare?: number; // px either side of where it crosses the swag with no leaves (no clump)
 };
 const STRANDS: StrandSpec[] = [
-  { from: () => 0, fromSwag: true, bareTop: 14, length: 215, lean: 2, wander: 11, periodMs: 5600, phase: 0, seed: 11 },
+  { from: () => 0, throughSwag: true, bare: 19, length: 215, lean: 2, wander: 11, periodMs: 5600, phase: 0, seed: 11 },
   { from: (w) => Math.min(w * 0.7, w - 95), length: 105, lean: -3, wander: 9, periodMs: 4700, phase: 2.1, seed: 29 },
 ];
 // Only the lower ends of the strands move: the sway fades in over the last `swayFrom` of
 // their length, up to `amplitude` degrees at the tip.
+const TOP = -6; // strands hang from just above the top edge
 const STRAND = { amplitude: 4, swayFrom: 0.55, leafEvery: 17, segment: 6 }; // degrees, fraction, px, px
 
 const LEAF = { min: 8, max: 18, stroke: 1.1 };
@@ -222,7 +225,14 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     };
   }
 
-  function makeStrand(length: number, leafEvery: number, seed: number, droop: number, even = false, bareTop = 0): Strand {
+  function makeStrand(
+    length: number,
+    leafEvery: number,
+    seed: number,
+    droop: number,
+    even = false,
+    bareAt?: { at: number; half: number },
+  ): Strand {
     const group = el("g", {});
     const stem = el("path", { fill: "none", stroke: INK, "stroke-width": 1.5, "stroke-linecap": "round", "stroke-linejoin": "round" });
     group.appendChild(stem);
@@ -237,7 +247,11 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
       }
     } else {
       // Irregular: mostly alternating sides, now and then two close together.
-      for (let at = bareTop + 4 + rnd() * leafEvery; at < length - 3; ) {
+      for (let at = 4 + rnd() * leafEvery; at < length - 3; ) {
+        if (bareAt && Math.abs(at - bareAt.at) < bareAt.half) {
+          at = bareAt.at + bareAt.half;
+          continue;
+        }
         leaves.push(makeLeaf(group, at, side, rnd, droop));
         if (rnd() < 0.8) side = side === 1 ? -1 : 1;
         at += rnd() < 0.2 ? 4 + rnd() * 5 : leafEvery * (0.6 + rnd() * 0.9);
@@ -255,9 +269,13 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     defs.appendChild(ditherPattern(shade, 0.72));
     svg.appendChild(defs);
     // Hanging strands first, so the swag's leaves sit over the top of them.
+    // The swag doesn't move, so where it bottoms out is fixed.
+    const crossAt = lowest(swagSpine(0)).y - TOP; // length of a strand's part above the swag
     strands = STRANDS.map((spec) => ({
       spec,
-      strand: makeStrand(spec.length, STRAND.leafEvery, spec.seed, 0.3, false, spec.bareTop ?? 0),
+      strand: spec.throughSwag
+        ? makeStrand(crossAt + spec.length, STRAND.leafEvery, spec.seed, 0.3, false, { at: crossAt, half: spec.bare ?? 0 })
+        : makeStrand(spec.length, STRAND.leafEvery, spec.seed, 0.3),
     }));
     swag = makeStrand(220, SWAG.leafEvery, 7, 0.5, true);
   }
@@ -287,8 +305,15 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     place(swag, swagPts);
     const low = lowest(swagPts);
     for (const { strand, spec } of strands) {
-      if (spec.fromSwag) place(strand, hangingSpine(low.x, low.y, spec, t));
-      else place(strand, hangingSpine(spec.from(width), -6, spec, t));
+      if (spec.throughSwag) {
+        // Straight down from the top edge to the swag's lowest point, then hanging on below it.
+        const above: Point[] = [];
+        const steps = Math.max(1, Math.round((low.y - TOP) / STRAND.segment));
+        for (let i = 0; i < steps; i++) above.push({ x: low.x, y: TOP + ((low.y - TOP) * i) / steps, angle: Math.PI / 2 });
+        place(strand, [...above, ...hangingSpine(low.x, low.y, spec, t)]);
+      } else {
+        place(strand, hangingSpine(spec.from(width), TOP, spec, t));
+      }
     }
   }
 
