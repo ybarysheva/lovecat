@@ -5,7 +5,7 @@ export const STARTER_NOTES: { group: string; notes: string[] }[] = [
     group: "Sweet",
     notes: [
       "I love you",
-      "You are beloved.",
+      "You are beloved",
       "I would choose you again every time",
       "Every day with you is worth it",
       "I love you forever",
@@ -26,7 +26,7 @@ export const STARTER_NOTES: { group: string; notes: string[] }[] = [
       "We are going to get through this together",
       "I see how much you're carrying and I want to share the weight",
       "One thing at a time",
-      "Drink some water.",
+      "Drink some water",
     ],
   },
   {
