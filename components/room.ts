@@ -59,9 +59,9 @@ const FADE = { from: 200, to: 620 };
 // from the wall, drawn in perspective (seams fan out toward you from a vanishing point
 // above the floor line), with staggered joints where boards end. In the cat's units.
 const FLOORBOARDS = {
-  width: 15, // a board's width where it meets the wall
-  vanish: 700, // how far above the floor line the seams converge (far: gentle perspective)
-  plank: 0.11, // board length, in perspective depth units (1 = at the wall)
+  width: 22, // a board's width where it meets the wall
+  vanish: 430, // how far above the floor line the seams converge (closer: more flare)
+  plank: 0.15, // board length, in perspective depth units (1 = at the wall)
   line: 0.45, // how dark seams and joints are
 };
 const hash = (n: number) => {
