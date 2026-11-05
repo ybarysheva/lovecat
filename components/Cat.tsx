@@ -603,12 +603,24 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
       dot.style.opacity = "0";
       spawnStarBurst(landing.x, landing.y, landing.scale);
       playPurr(3800);
+      purrVibration(4000); // same body vibration as the treat reward
     }, impactMs);
 
     later(() => {
       catching = false;
       stopLaser();
     }, POUNCE_MS + 150);
+  }
+
+  let vibrationTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  function purrVibration(ms: number) {
+    cancel(vibrationTimeout);
+    cssCat.classList.add("cat-purring");
+    vibrationTimeout = later(() => {
+      vibrationTimeout = null;
+      cssCat.classList.remove("cat-purring");
+    }, ms);
   }
 
   function spawnStarBurst(x: number, y: number, scale: number) {
