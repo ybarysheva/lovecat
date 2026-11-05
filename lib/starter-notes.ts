@@ -10,12 +10,17 @@ export const STARTER_NOTES: { group: string; notes: string[] }[] = [
       "Every day with you is worth it",
       "I love you forever",
       "Grateful for you",
+      "Thank you for everything you do",
       "You are my favorite person",
       "I'm so glad you exist",
       "Thinking about you right now",
       "You make ordinary days better",
       "Hours of talking with you and I always want more",
       "Let's keep yapping forever",
+      "The cat and I agree: you are our favorite person",
+      "Meow (translation: you're wonderful)",
+      "You have excellent taste in cats",
+      "You're the best physically, mentally, emotionally, philosophically, etc",
     ],
   },
   {
@@ -26,15 +31,6 @@ export const STARTER_NOTES: { group: string; notes: string[] }[] = [
       "We are going to get through this together",
       "I see how much you're carrying and I want to share the weight",
       "Drink some water",
-    ],
-  },
-  {
-    group: "Playful",
-    notes: [
-      "The cat and I agree: you are our favorite person",
-      "Meow (translation: you're wonderful)",
-      "You have excellent taste in cats",
-      "You're the best physically, mentally, emotionally, philosophically, etc",
     ],
   },
 ];
