@@ -11,7 +11,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "lovecat",
+  title: "send-a-cat",
   description: "Send someone a little cat that tells them nice things when they pet it.",
 };
 

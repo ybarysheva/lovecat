@@ -23,7 +23,7 @@ const load = cache(async (id: string) => {
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { card } = await load((await params).id);
-  if (!card) return { title: "lovecat", robots };
+  if (!card) return { title: "send-a-cat", robots };
   const title = `A cat for ${card.to}`;
   const description = card.from
     ? `${card.from} sent you a cat. Pet it to receive love.`

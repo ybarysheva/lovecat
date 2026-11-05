@@ -1,4 +1,4 @@
-# lovecat
+# send-a-cat
 
 Send someone a little cat that tells them nice things when they pet it.
 

@@ -8,13 +8,14 @@ import { STARTER_NOTES } from "@/lib/starter-notes";
 
 type Draft = { to: string; from: string; notes: string[] };
 
-const DRAFT_KEY = "lovecat:draft";
+const DRAFT_KEY = "send-a-cat:draft";
+const OLD_DRAFT_KEY = "lovecat:draft"; // from before the rename; read once so a draft in progress isn't lost
 const EMPTY: Draft = { to: "", from: "", notes: [] };
 
 // The draft is a per-browser convenience, so storage failures (private mode etc.) are ignored.
 function loadDraft(): Draft {
   try {
-    const raw = localStorage.getItem(DRAFT_KEY);
+    const raw = localStorage.getItem(DRAFT_KEY) ?? localStorage.getItem(OLD_DRAFT_KEY);
     if (!raw) return EMPTY;
     const d = JSON.parse(raw) as Partial<Draft>;
     return {
@@ -34,6 +35,7 @@ function saveDraft(d: Draft) {
 function clearDraft() {
   try {
     localStorage.removeItem(DRAFT_KEY);
+    localStorage.removeItem(OLD_DRAFT_KEY);
   } catch {}
 }
 
@@ -171,7 +173,7 @@ export default function Builder() {
     return (
       <main className="builder">
         <p className="brand">
-          <Link href="/">[ lovecat ]</Link>
+          <Link href="/">[ send-a-cat ]</Link>
         </p>
         <section className="panel result" aria-live="polite">
           <h2>{name ? `${name}'s cat is ready` : "Your cat is ready"}</h2>
@@ -208,7 +210,7 @@ export default function Builder() {
     <>
       <main className="builder">
         <p className="brand">
-          <Link href="/">[ lovecat ]</Link>
+          <Link href="/">[ send-a-cat ]</Link>
         </p>
         <h1>Send someone a cat that says nice things</h1>
         <p className="lede">
