@@ -2,7 +2,7 @@
 //
 // Each part of the cat is shaded as a lit form (light from the upper left) and turned
 // into ink/paper pixels with an 8×8 ordered (Bayer) dither. One texture pixel is one
-// 1×1px "cat pixel"; CSS scales them up with image-rendering: pixelated. The dither
+// 1.5×1.5px "cat pixel"; CSS scales them up with image-rendering: pixelated. The dither
 // grid is in the cat's own coordinates, so neighbouring parts share one continuous grid.
 //
 // Run after changing a part's size or position in components/cat.css:
@@ -14,7 +14,7 @@ import zlib from "node:zlib";
 
 const INK = [0x1c, 0x14, 0x10];
 const PAPER = [0xd4, 0xc5, 0xa9];
-const CELL = 1; // css px per cat pixel (the size of one dither dot)
+const CELL = 1.5; // css px per cat pixel (the size of one dither dot)
 
 const BAYER8 = [
   [0, 32, 8, 40, 2, 34, 10, 42],
