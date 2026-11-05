@@ -712,8 +712,7 @@
 .bag-hint {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.6rem;
-  color: #1C1410;
-  opacity: 0.6;
+  color: #322922; /* ink at 88% on paper, like the "pet the cat" label */
   margin-top: 4px;
   letter-spacing: 0.04em;
 }
@@ -777,8 +776,7 @@
 .laser-hint {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.6rem;
-  color: #1C1410;
-  opacity: 0.6;
+  color: #322922; /* ink at 88% on paper, like the "pet the cat" label */
   margin-top: 4px;
   letter-spacing: 0.04em;
 }
