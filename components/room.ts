@@ -35,6 +35,8 @@ const TONE = {
 };
 // The corner fades out toward the sides: full near the cat, gone by `fadeTo` from its center.
 const FADE = { from: 200, to: 620 };
+// A soft shadow on the floor where the cushion sits (its bottom is at the cat's y 340).
+const BED_SHADOW = { y: 340, rx: 155, ry: 13, ink: 0.22 };
 
 const smoothstep = (e0: number, e1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
@@ -168,7 +170,12 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
         if (y < baseTop + 1) tone = 1; // the baseboard's top edge
         else if (y < floorY) tone = TONE.baseboard;
         else if (y < floorY + 1) tone = 0.8; // where the baseboard meets the floor
-        else tone = TONE.floor * (1 - smoothstep(0, 320 * s, y - floorY)); // floor, fading toward you
+        else {
+          tone = TONE.floor * (1 - smoothstep(0, 320 * s, y - floorY)); // floor, fading toward you
+          // The bed's shadow, darkest right under its edge and fading out.
+          const d = Math.hypot((x + 0.5 - cx) / (BED_SHADOW.rx * s), (y + 0.5 - (cat.top + BED_SHADOW.y * s)) / (BED_SHADOW.ry * s));
+          tone += BED_SHADOW.ink * (1 - smoothstep(0.35, 1, d));
+        }
         ink = tone * side > (row[x & 7] + 0.5) / 64;
       }
       const c = ink ? INK : PAPER;

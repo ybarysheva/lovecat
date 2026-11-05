@@ -35,6 +35,10 @@ const L = (() => {
 })();
 
 const clamp = (x, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, x));
+const smoothstep = (e0, e1, x) => {
+  const t = clamp((x - e0) / (e1 - e0));
+  return t * t * (3 - 2 * t);
+};
 
 /** Brightness (0–1) of a rounded form at box coordinates u, v (0–1). */
 function sphere(u, v, squashX = 1) {
@@ -72,8 +76,8 @@ const PARTS = [
   { name: "blush-r", x: 175, y: 117, w: 28, h: 14, material: "light", tone: (u, v) => sphere(u, v) * 0.85 },
   { name: "belly", x: 107, y: 218, w: 86, h: 44, material: "light", tone: (u, v) => sphere(u, v) },
   {
-    // The cushion: lit across the top, darker toward the bottom, with the cat's
-    // shadow falling on it just below the body.
+    // The cushion: lit across the top, darker toward the bottom (its underside is in
+    // shade), with the cat's shadow falling on it just below the body.
     name: "cloud",
     x: 6,
     y: 258,
@@ -85,7 +89,8 @@ const PARTS = [
       const sx = (u * 288 - 150) / 105;
       const sy = (v * 82 - 8) / 26;
       const shadow = Math.max(0, 1 - Math.hypot(sx, sy));
-      return clamp(lit - 0.55 * Math.pow(shadow, 0.8));
+      const underside = 0.3 * smoothstep(0.55, 1, v);
+      return clamp(lit - 0.55 * Math.pow(shadow, 0.8) - underside);
     },
   },
   {
