@@ -5,28 +5,12 @@
 // swaying gently (a wave running toward the tip, like the tail); the swag is still.
 // Drawn as SVG in the cat's ink; leaves are filled with a 1px ordered-dither pattern.
 
-const SVG_NS = "http://www.w3.org/2000/svg";
-const INK = "#1C1410";
-const PAPER = "#D4C5A9";
-// The leaves' dotted fill is printed in a lighter ink (outlines and vines stay full ink).
-// LEAF_FADE is how far toward the paper color: 0 = full ink, 1 = paper.
-const LEAF_FADE = 0.35;
-const LEAF_INK = (() => {
-  const a = [0x1c, 0x14, 0x10];
-  const b = [0xd4, 0xc5, 0xa9];
-  return "#" + a.map((c, i) => Math.round(c + (b[i] - c) * LEAF_FADE).toString(16).padStart(2, "0")).join("");
-})();
+import { ditherInk, fadedInk, hex, INK_HEX as INK, PAPER_HEX as PAPER, seededRandom } from "@/lib/palette";
 
-const BAYER8 = [
-  [0, 32, 8, 40, 2, 34, 10, 42],
-  [48, 16, 56, 24, 50, 18, 58, 26],
-  [12, 44, 4, 36, 14, 46, 6, 38],
-  [60, 28, 52, 20, 62, 30, 54, 22],
-  [3, 35, 11, 43, 1, 33, 9, 41],
-  [51, 19, 59, 27, 49, 17, 57, 25],
-  [15, 47, 7, 39, 13, 45, 5, 37],
-  [63, 31, 55, 23, 61, 29, 53, 21],
-];
+const SVG_NS = "http://www.w3.org/2000/svg";
+// The leaves' dotted fill is printed in a lighter ink (outlines and vines stay full ink).
+// 0 = full ink, 1 = paper.
+const LEAF_INK = hex(fadedInk(0.35));
 
 // Everything about the plant is sized by this, so it sits in scale with the cat and the
 // wallpaper (1 = the original, smaller plant).
@@ -67,15 +51,6 @@ const STRAND = { amplitude: 4, swayFrom: 0.55, leafEvery: 17 * K, segment: 6 }; 
 
 const LEAF = { min: 8 * K, max: 18 * K, stroke: 0.75 }; // outline width: thin, so leaves read light
 
-// A small seeded random generator, so the leaves land in the same places every time.
-function random(seed: number) {
-  let s = seed >>> 0;
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0;
-    return s / 2 ** 32;
-  };
-}
-
 /**
  * A pothos-style heart leaf pointing along +x, its base at (x0, 0), `size` px long.
  * `wide` sets its width (narrow ones look turned away), `lopsided` makes one half
@@ -111,7 +86,7 @@ function ditherPattern(id: string, density: number) {
   p.appendChild(el("rect", { width: 8, height: 8, fill: PAPER }));
   for (let y = 0; y < 8; y++) {
     for (let x = 0; x < 8; x++) {
-      if ((BAYER8[y][x] + 0.5) / 64 < density) p.appendChild(el("rect", { x, y, width: 1, height: 1, fill: LEAF_INK }));
+      if (ditherInk(density, x, y)) p.appendChild(el("rect", { x, y, width: 1, height: 1, fill: LEAF_INK }));
     }
   }
   return p;
@@ -247,7 +222,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     const group = el("g", {});
     const stem = el("path", { fill: "none", stroke: INK, "stroke-width": 1.4, "stroke-linecap": "round", "stroke-linejoin": "round" });
     group.appendChild(stem);
-    const rnd = random(seed);
+    const rnd = seededRandom(seed); // so the leaves land in the same places every time
     const leaves: Leaf[] = [];
     let side: 1 | -1 = rnd() < 0.5 ? 1 : -1;
     if (even) {

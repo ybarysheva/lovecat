@@ -8,9 +8,9 @@
   min-height: 100dvh;
   position: relative;
   padding: 24px 16px 64px;
-  background: #D4C5A9;
+  background: var(--paper);
   isolation: isolate; /* so the background canvas can sit behind everything else in the scene */
-  color: #1C1410;
+  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,17 +70,17 @@
 }
 
 .bubble {
-  background: #D4C5A9;
-  border: 3px solid #1C1410;
+  background: var(--paper);
+  border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 14px 18px;
   max-width: 300px;
   width: max-content;
   font-size: 0.88rem;
   line-height: 1.65;
-  color: #1C1410;
+  color: var(--ink);
   font-family: 'Courier New', Courier, monospace;
-  filter: drop-shadow(3px 3px 0 #1C1410);
+  filter: drop-shadow(3px 3px 0 var(--ink));
   text-align: center;
   position: relative;
   transform-origin: bottom center;
@@ -97,7 +97,7 @@
   transform: translateX(-50%);
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-top: 14px solid #1C1410;
+  border-top: 14px solid var(--ink);
 }
 .bubble::before {
   content: '';
@@ -109,7 +109,7 @@
      its tail join without a line between them. */
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-top: 12px solid #D4C5A9;
+  border-top: 12px solid var(--paper);
   z-index: 1;
 }
 
@@ -233,8 +233,8 @@
 .cat-label {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.82rem;
-  color: #322922; /* ink at 88% on paper */
-  background: #D4C5A9;
+  color: color-mix(in srgb, var(--ink) 88%, var(--paper));
+  background: var(--paper);
   padding: 3px 8px;
   letter-spacing: 0.06em;
   margin-top: 14px;
@@ -242,8 +242,8 @@
 }
 .cat-from {
   font-size: 0.72rem;
-  color: #41372F; /* ink at 80% on paper */
-  background: #D4C5A9;
+  color: color-mix(in srgb, var(--ink) 80%, var(--paper));
+  background: var(--paper);
   padding: 2px 8px;
   letter-spacing: 0.06em;
   margin-top: 4px;
@@ -263,8 +263,8 @@
 }
 .cat-footer a, .cat-footer button {
   font: inherit;
-  color: #D4C5A9;
-  background: #1C1410;
+  color: var(--paper);
+  background: var(--ink);
   border: 0;
   padding: 6px 12px;
   border-radius: 3px;
@@ -344,7 +344,7 @@
 .cat-stripe {
   position: absolute;
   width: 5px;
-  background: #1C1410;
+  background: var(--ink);
   border-radius: 3px;
 }
 .cat-stripe--1 { top: 10px; left: 20px;  height: 46px; transform: rotate(-16deg); }
@@ -377,10 +377,10 @@
   position: absolute;
   top: 18%; left: 34%;
   width: 1.5px; height: 66%;
-  background: #D4C5A9;
+  background: var(--paper);
   border-radius: 1px;
   opacity: 0.55;
-  box-shadow: 9px 0 0 #D4C5A9;
+  box-shadow: 9px 0 0 var(--paper);
 }
 
 /* ---------- FACE GROUP — wraps ears + head for tilt animation ---------- */
@@ -448,7 +448,7 @@
 /* forehead stripes — solid ink */
 .cat-head-stripe {
   position: absolute;
-  background: #1C1410;
+  background: var(--ink);
   border-radius: 2px;
   width: 4px;
 }
@@ -471,7 +471,7 @@
   position: absolute;
   top: 35px;
   width: 22px; height: 22px;
-  background: #D4C5A9;
+  background: var(--paper);
   border-radius: 50%;
 }
 .cat-eye-bg--l { left: 16px;  }
@@ -482,7 +482,7 @@
   position: absolute;
   top: 39px;
   width: 14px; height: 14px;
-  background: #1C1410;
+  background: var(--ink);
   border-radius: 50%;
   transform-origin: center center;
   animation: blink 4.2s ease-in-out infinite;
@@ -497,7 +497,7 @@
   position: absolute;
   top: 10%; left: 50%;
   width: 5px; height: 5px;
-  background: #D4C5A9;
+  background: var(--paper);
   border-radius: 50%;
 }
 
@@ -532,10 +532,10 @@
   z-index: 500;
   font-family: serif;
   line-height: 1;
-  color: #1C1410;
+  color: var(--ink);
   /* thin paper outline so stars stay visible over the cat's dark fur */
-  text-shadow: 1px 0 #D4C5A9, -1px 0 #D4C5A9, 0 1px #D4C5A9, 0 -1px #D4C5A9,
-    1px 1px #D4C5A9, -1px -1px #D4C5A9, 1px -1px #D4C5A9, -1px 1px #D4C5A9;
+  text-shadow: 1px 0 var(--paper), -1px 0 var(--paper), 0 1px var(--paper), 0 -1px var(--paper),
+    1px 1px var(--paper), -1px -1px var(--paper), 1px -1px var(--paper), -1px 1px var(--paper);
   transform: translate(-50%, -50%);
 }
 
@@ -544,7 +544,7 @@
   pointer-events: none;
   z-index: 500;
   font-family: serif;
-  color: #1C1410;
+  color: var(--ink);
   transform: translate(-50%, -50%);
 }
 
@@ -563,7 +563,7 @@
   top: 62px; left: 50%;
   transform: translateX(-50%);
   width: 14px; height: 10px;
-  background: #1C1410;
+  background: var(--ink);
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }
 
@@ -573,7 +573,7 @@
   top: 71px; left: 50%;
   transform: translateX(-50%);
   width: 20px; height: 9px;
-  border: 2.5px solid #1C1410;
+  border: 2.5px solid var(--ink);
   border-top: none;
   border-radius: 0 0 12px 12px;
 }
@@ -582,7 +582,7 @@
 .cat-whisker {
   position: absolute;
   height: 1.5px; width: 62px;
-  background: #D4C5A9;
+  background: var(--paper);
   border-radius: 1px;
   opacity: 0.9;
 }
@@ -602,7 +602,7 @@
 
 /* ---- SHADED TEXTURES ----
    1-bit, Obra Dinn-style: each part is shaded as a lit form (light from the upper left)
-   and ordered-dithered into ink/paper. Generated by scripts/dither-textures.mjs; one
+   and ordered-dithered into ink/paper. Generated by scripts/dither-textures.ts; one
    texture pixel is one 1×1px cat pixel, kept crisp by image-rendering: pixelated. */
 .cat-cloud, .cat-body, .cat-belly, .cat-paw, .cat-ear::after, .cat-ear-inner,
 .cat-head, .cat-blush, .cat-muzzle {
@@ -640,15 +640,15 @@
 
 .bag-knot {
   width: 14px; height: 8px;
-  background: #1C1410;
+  background: var(--ink);
   border-radius: 4px 4px 0 0;
 }
 .bag-body {
   width: 40px; height: 50px;
-  /* shaded dither texture, like the cat (scripts/dither-textures.mjs) */
+  /* shaded dither texture, like the cat (scripts/dither-textures.ts) */
   background: url("/tex/bag.png") border-box 0 0 / 40px 50px no-repeat;
   image-rendering: pixelated;
-  border: 2.5px solid #1C1410;
+  border: 2.5px solid var(--ink);
   border-radius: 3px 3px 10px 10px;
   display: flex;
   flex-direction: column;
@@ -657,21 +657,21 @@
   gap: 3px;
 }
 .bag-icon {
-  color: #D4C5A9;
+  color: var(--paper);
   font-size: 15px;
   line-height: 1;
 }
 .bag-label-text {
   font-family: 'Courier New', Courier, monospace;
   font-size: 6px;
-  color: #D4C5A9;
+  color: var(--paper);
   letter-spacing: 0.12em;
 }
 .bag-hint {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.6rem;
-  color: #322922; /* ink at 88% on paper, like the "pet the cat" label */
-  background: #D4C5A9; /* paper underlay, so the wallpaper never shows through */
+  color: color-mix(in srgb, var(--ink) 88%, var(--paper));
+  background: var(--paper); /* paper underlay, so the wallpaper never shows through */
   padding: 1px 4px;
   margin-top: 4px;
   letter-spacing: 0.04em;
@@ -702,10 +702,10 @@
   position: relative;
   width: 14px;
   height: 48px;
-  /* shaded dither texture, like the cat (scripts/dither-textures.mjs) */
+  /* shaded dither texture, like the cat (scripts/dither-textures.ts) */
   background: url("/tex/laser.png") border-box 0 0 / 14px 48px no-repeat;
   image-rendering: pixelated;
-  border: 2.5px solid #1C1410;
+  border: 2.5px solid var(--ink);
   border-radius: 3px 3px 2px 2px;
 }
 /* button bump on top */
@@ -715,7 +715,7 @@
   top: 7px; left: 50%;
   transform: translateX(-50%);
   width: 8px; height: 5px;
-  background: #1C1410;
+  background: var(--ink);
   border-radius: 2px;
 }
 /* tip taper */
@@ -724,7 +724,7 @@
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 10px solid #1C1410;
+  border-top: 10px solid var(--ink);
 }
 /* red emitter dot on tip */
 .laser-emitter {
@@ -736,8 +736,8 @@
 .laser-hint {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.6rem;
-  color: #322922; /* ink at 88% on paper, like the "pet the cat" label */
-  background: #D4C5A9; /* paper underlay, so the wallpaper never shows through */
+  color: color-mix(in srgb, var(--ink) 88%, var(--paper));
+  background: var(--paper); /* paper underlay, so the wallpaper never shows through */
   padding: 1px 4px;
   margin-top: 4px;
   letter-spacing: 0.04em;
@@ -778,7 +778,7 @@
 .treat-flying {
   position: fixed;
   width: 10px; height: 10px;
-  background: #1C1410;
+  background: var(--ink);
   border-radius: 50%;
   pointer-events: none;
   z-index: 1000;

@@ -6,26 +6,14 @@
 // grid is in the cat's own coordinates, so neighbouring parts share one continuous grid.
 //
 // Run after changing a part's size or position in components/cat.css:
-//   node scripts/dither-textures.mjs
+//   npm run textures
 
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
+import { clamp, ditherInk, INK, PAPER, smoothstep } from "../lib/palette.ts";
 
-const INK = [0x1c, 0x14, 0x10];
-const PAPER = [0xd4, 0xc5, 0xa9];
 const CELL = 1; // css px per cat pixel (the size of one dither dot)
-
-const BAYER8 = [
-  [0, 32, 8, 40, 2, 34, 10, 42],
-  [48, 16, 56, 24, 50, 18, 58, 26],
-  [12, 44, 4, 36, 14, 46, 6, 38],
-  [60, 28, 52, 20, 62, 30, 54, 22],
-  [3, 35, 11, 43, 1, 33, 9, 41],
-  [51, 19, 59, 27, 49, 17, 57, 25],
-  [15, 47, 7, 39, 13, 45, 5, 37],
-  [63, 31, 55, 23, 61, 29, 53, 21],
-];
 
 // Light from the upper left, a little in front.
 const L = (() => {
@@ -34,14 +22,8 @@ const L = (() => {
   return v.map((c) => c / n);
 })();
 
-const clamp = (x, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, x));
-const smoothstep = (e0, e1, x) => {
-  const t = clamp((x - e0) / (e1 - e0));
-  return t * t * (3 - 2 * t);
-};
-
 /** Brightness (0–1) of a rounded form at box coordinates u, v (0–1). */
-function sphere(u, v, squashX = 1) {
+function sphere(u: number, v: number, squashX = 1) {
   const nx = (u - 0.5) * 2 * squashX;
   const ny = (v - 0.5) * 2;
   const r = Math.min(1, Math.hypot(nx, ny));
@@ -55,13 +37,24 @@ function sphere(u, v, squashX = 1) {
 
 // How much ink each material uses, from fully lit (tone 1) to in shadow (tone 0).
 const MATERIAL = {
-  fur: (tone) => 1 - 0.42 * tone, // dark tabby fur: ~60% ink where lit, ~95% in shadow
-  mid: (tone) => 0.3 + 0.5 * (1 - tone), // muzzle, inner ears
-  light: (tone) => 0.12 + 0.45 * (1 - tone), // belly, blush, cloud: never so light the shape disappears
+  fur: (tone: number) => 1 - 0.42 * tone, // dark tabby fur: ~60% ink where lit, ~95% in shadow
+  mid: (tone: number) => 0.3 + 0.5 * (1 - tone), // muzzle, inner ears
+  light: (tone: number) => 0.12 + 0.45 * (1 - tone), // belly, blush, cloud: never so light the shape disappears
+};
+
+type Part = {
+  name: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  material: keyof typeof MATERIAL;
+  tone: (u: number, v: number) => number;
+  scale?: number; // store this many texture pixels per cat pixel
 };
 
 // Every textured part, in the cat's 300×340 coordinates (see components/cat.css).
-const PARTS = [
+const PARTS: Part[] = [
   { name: "head", x: 92, y: 54, w: 116, h: 112, material: "fur", tone: (u, v) => sphere(u, v) },
   { name: "body", x: 64, y: 162, w: 172, h: 104, material: "fur", tone: (u, v) => sphere(u, v) * 0.92 },
   { name: "paw-l", x: 76, y: 262, w: 50, h: 22, material: "fur", tone: (u, v) => sphere(u, v) },
@@ -125,7 +118,7 @@ const PARTS = [
   },
 ];
 
-function render(part) {
+function render(part: Part) {
   const cols = Math.ceil(part.w / CELL);
   const rows = Math.ceil(part.h / CELL);
   const k = part.scale ?? 1;
@@ -140,8 +133,7 @@ function render(part) {
       // Threshold on the cat-wide grid so all parts' dithers line up.
       const gx = Math.floor(part.x / CELL) + c;
       const gy = Math.floor(part.y / CELL) + r;
-      const threshold = (BAYER8[gy & 7][gx & 7] + 0.5) / 64;
-      const color = ink > threshold ? INK : PAPER;
+      const color = ditherInk(ink, gx, gy) ? INK : PAPER;
       for (let dy = 0; dy < k; dy++) {
         for (let dx = 0; dx < k; dx++) {
           const i = ((r * k + dy) * width + (c * k + dx)) * 3;
@@ -156,13 +148,13 @@ function render(part) {
 }
 
 // Minimal PNG writer: 8-bit RGB, no filtering.
-function encodePng(width, height, rgb) {
+function encodePng(width: number, height: number, rgb: Buffer) {
   const raw = Buffer.alloc((width * 3 + 1) * height);
   for (let y = 0; y < height; y++) {
     raw[y * (width * 3 + 1)] = 0;
     rgb.copy(raw, y * (width * 3 + 1) + 1, y * width * 3, (y + 1) * width * 3);
   }
-  const chunk = (type, data) => {
+  const chunk = (type: string, data: Buffer) => {
     const len = Buffer.alloc(4);
     len.writeUInt32BE(data.length);
     const td = Buffer.concat([Buffer.from(type, "ascii"), data]);

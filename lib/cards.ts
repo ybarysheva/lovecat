@@ -5,8 +5,7 @@ import { getKV } from "./kv";
 const ID_ALPHABET = "23456789abcdefghijkmnpqrstuvwxyz"; // no 0/o, 1/l to keep links readable
 const ID_LENGTH = 10; // 32^10 ≈ 10^15 possible links, so they can't be guessed
 
-// Lowercase only, so a link still works if a phone capitalises or lowercases it.
-export const ID_PATTERN = /^[23456789abcdefghijkmnpqrstuvwxyz]{10}$/;
+const ID_PATTERN = new RegExp(`^[${ID_ALPHABET}]{${ID_LENGTH}}$`);
 
 function newId(): string {
   // 32 divides 256 evenly, so taking each byte mod 32 is unbiased.
@@ -24,7 +23,9 @@ export async function createCard(input: CardInput): Promise<Card> {
   throw new Error("Couldn't find a free link id.");
 }
 
-export async function readCard(id: string): Promise<Card | null> {
+export async function readCard(rawId: string): Promise<Card | null> {
+  // IDs are lowercase, so a link still works if a phone capitalises it.
+  const id = rawId.toLowerCase();
   if (!ID_PATTERN.test(id)) return null;
   const raw = await getKV().get(key(id));
   if (!raw) return null;

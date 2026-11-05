@@ -1,10 +1,11 @@
 // An occasional fly. Every so often it comes in from the left, right or top and darts
 // around above the cat like a real fly: quick straight zips, sudden stops, a twitchy hover,
-// then another zip. It never comes lower than the cat's ear tips. Then it zips off screen. The cat watches it (the caller moves the pupils via
-// onMove) and its tail goes wild while it's around (the caller checks `active`).
+// then another zip. It never comes lower than the cat's ear tips. Then it zips off screen.
+// The cat watches it (the caller moves the pupils via onMove) and its tail goes wild while
+// it's around (the caller checks `active`).
 
-const INK = "#1C1410";
-const PAPER = "#D4C5A9";
+import { INK_HEX as INK, PAPER_HEX as PAPER } from "@/lib/palette";
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 export const FLY = {

@@ -4,23 +4,11 @@
 // out toward the sides. Drawn in the cat's two colors (ink motifs, 1px ordered dither
 // for tones) and placed relative to the cat, so it lines up on any screen.
 
-const INK = [0x1c, 0x14, 0x10] as const;
-const PAPER = [0xd4, 0xc5, 0xa9] as const;
-// The wallpaper's dots are printed in a faded ink, so the pattern reads light without
-// losing any dots. MOTIF_FADE is how far toward the paper color (0 = full ink, 1 = paper).
-const MOTIF_FADE = 0.72;
-const MOTIF_INK = INK.map((c, i) => Math.round(c + (PAPER[i] - c) * MOTIF_FADE)) as unknown as typeof INK;
+import { ditherInk, fadedInk, hash, INK, PAPER, smoothstep } from "@/lib/palette";
 
-const BAYER8 = [
-  [0, 32, 8, 40, 2, 34, 10, 42],
-  [48, 16, 56, 24, 50, 18, 58, 26],
-  [12, 44, 4, 36, 14, 46, 6, 38],
-  [60, 28, 52, 20, 62, 30, 54, 22],
-  [3, 35, 11, 43, 1, 33, 9, 41],
-  [51, 19, 59, 27, 49, 17, 57, 25],
-  [15, 47, 7, 39, 13, 45, 5, 37],
-  [63, 31, 55, 23, 61, 29, 53, 21],
-];
+// The wallpaper's dots are printed in a faded ink, so the pattern reads light without
+// losing any dots. 0 = full ink, 1 = paper.
+const MOTIF_INK = fadedInk(0.72);
 
 // In the cat's units (the cat is 300×340); everything scales with the cat.
 const FLOOR_AT = 300; // floor line, in the cat's coordinates (through the cushion)
@@ -68,21 +56,11 @@ const FLOORBOARDS = {
   plank: 0.15, // board length, in perspective depth units (1 = at the wall)
   line: 0.45, // how dark seams and joints are
 };
-const hash = (n: number) => {
-  const v = Math.sin(n * 12.9898) * 43758.5453;
-  return v - Math.floor(v);
-};
-
 // A soft shadow on the floor where the cushion sits (its bottom is at the cat's y 340).
 const BED_SHADOW = { y: 340, rx: 155, ry: 13, ink: 0.22 };
 
 // Even 1D dot order for thin lines: any fraction comes out evenly spaced along a row.
 const LINE_DOTS = [0, 4, 2, 6, 1, 5, 3, 7];
-
-const smoothstep = (e0: number, e1: number, x: number) => {
-  const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
-  return t * t * (3 - 2 * t);
-};
 
 export type CatPlacement = { left: number; top: number; scale: number };
 
@@ -214,13 +192,11 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
   const img = ctx.createImageData(w, h);
   const d = img.data;
   for (let y = 0; y < h; y++) {
-    const row = BAYER8[y & 7];
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
       const motif = motifs[i + 3];
       const isLine = motifs[i] > 127; // red: fish bone lines
-      const threshold = (row[x & 7] + 0.5) / 64;
-      let ink = isLine ? motif > 110 && TONE.fishLine > threshold : motif > 127 && TONE.motif > threshold;
+      let ink = isLine ? motif > 110 && ditherInk(TONE.fishLine, x, y) : motif > 127 && ditherInk(TONE.motif, x, y);
       const wallpaperDot = ink;
       if (!ink && y >= baseTop) {
         const side = 1 - smoothstep(FADE.from * s, FADE.to * s, Math.abs(x + 0.5 - cx));
@@ -256,7 +232,7 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
           const sd = Math.hypot((x + 0.5 - cx) / (BED_SHADOW.rx * s), (y + 0.5 - (cat.top + BED_SHADOW.y * s)) / (BED_SHADOW.ry * s));
           tone += BED_SHADOW.ink * (1 - smoothstep(0.35, 1, sd));
         }
-        ink = tone * side > (row[x & 7] + 0.5) / 64;
+        ink = ditherInk(tone * side, x, y);
       }
       const c = ink ? (wallpaperDot ? MOTIF_INK : INK) : PAPER;
       d[i] = c[0];

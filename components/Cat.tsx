@@ -319,63 +319,79 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     eyeR.classList.remove("eyes-purring");
   }
 
+  // Hearts rise from around the cat's upper body and head.
   function spawnHeartWaves(catRect: DOMRect) {
-    // 4 waves, gently tapering off
-    [
-      { delay: 0, count: 8 },
-      { delay: 900, count: 7 },
-      { delay: 1800, count: 5 },
-      { delay: 2700, count: 4 },
-    ].forEach(({ delay, count }) => {
-      later(() => {
-        for (let i = 0; i < count; i++) later(() => spawnOneHeart(catRect), i * 85);
-      }, delay);
+    spawnRisingWaves([8, 7, 5, 4], {
+      className: "heart-particle",
+      glyph: () => (Math.random() > 0.38 ? "♥" : "♡"),
+      x: catRect.left + catRect.width * 0.5,
+      y: catRect.top + catRect.height * 0.38,
+      jitterX: catRect.width * 0.75,
+      jitterY: catRect.height * 0.38,
+      size: [10, 28],
+      spread: 170,
+      rise: [55, 140],
+      spin: 38,
+      durationMs: [950, 1600],
+      pop: 1.4,
+      popAt: 0.18,
     });
   }
 
-  function spawnOneHeart(catRect: DOMRect) {
-    const heart = document.createElement("div");
-    heart.className = "heart-particle";
-    heart.textContent = Math.random() > 0.38 ? "♥" : "♡";
+  type Rising = {
+    className: string;
+    glyph: () => string;
+    x: number; // where they start, with this much random spread around it
+    y: number;
+    jitterX: number;
+    jitterY: number;
+    size: [number, number]; // font size range, px
+    spread: number; // how far they drift sideways, px either way
+    rise: [number, number]; // how far they float up, px
+    spin: number; // degrees, either way
+    durationMs: [number, number];
+    pop: number; // how big they pop up to before shrinking away
+    popAt: number; // fraction of the animation when they're biggest
+  };
 
-    // Spawn from around the cat's upper body / head area
-    const cx = catRect.left + catRect.width * 0.5;
-    const cy = catRect.top + catRect.height * 0.38;
-    heart.style.left = cx + (Math.random() - 0.5) * catRect.width * 0.75 + "px";
-    heart.style.top = cy + (Math.random() - 0.5) * catRect.height * 0.38 + "px";
-    heart.style.fontSize = 10 + Math.random() * 18 + "px";
-    root.appendChild(heart);
+  /** Particles (hearts, stars) that pop up and float away in waves: counts per wave, 0.9s apart. */
+  function spawnRisingWaves(counts: number[], opts: Rising) {
+    counts.forEach((count, wave) => {
+      later(() => {
+        for (let i = 0; i < count; i++) later(() => spawnRising(opts), i * 85);
+      }, wave * 900);
+    });
+  }
 
-    const spread = (Math.random() - 0.5) * 170;
-    const rise = 55 + Math.random() * 85;
-    const rot = (Math.random() - 0.5) * 38;
-    const dur = 950 + Math.random() * 650;
+  function spawnRising(o: Rising) {
+    const rand = ([a, b]: [number, number]) => a + Math.random() * (b - a);
+    const p = document.createElement("div");
+    p.className = o.className;
+    p.textContent = o.glyph();
+    p.style.left = o.x + (Math.random() - 0.5) * o.jitterX + "px";
+    p.style.top = o.y + (Math.random() - 0.5) * o.jitterY + "px";
+    p.style.fontSize = rand(o.size) + "px";
+    root.appendChild(p);
 
-    heart
-      .animate(
-        [
-          { transform: "translate(-50%,-50%) scale(0) rotate(0deg)", opacity: 0, easing: "ease-out" },
-          {
-            transform: `translate(-50%,-50%) scale(1.4) rotate(${rot * 0.3}deg)`,
-            opacity: 1,
-            offset: 0.18,
-            easing: "ease-in",
-          },
-          {
-            // Still fully visible two thirds of the way up, so they're seen rising past the head.
-            transform: `translate(calc(-50% + ${spread * 0.7}px), calc(-50% - ${rise * 0.7}px)) scale(0.95) rotate(${rot * 0.7}deg)`,
-            opacity: 1,
-            offset: 0.65,
-          },
-          {
-            transform: `translate(calc(-50% + ${spread}px), calc(-50% - ${rise}px)) scale(0.7) rotate(${rot}deg)`,
-            opacity: 0,
-          },
-        ],
-        { duration: dur, fill: "forwards" },
-      )
-      .finished.then(() => heart.remove())
-      .catch(() => heart.remove());
+    const spread = (Math.random() - 0.5) * o.spread;
+    const rise = rand(o.rise);
+    const rot = (Math.random() - 0.5) * o.spin;
+    p.animate(
+      [
+        { transform: "translate(-50%,-50%) scale(0) rotate(0deg)", opacity: 0, easing: "ease-out" },
+        { transform: `translate(-50%,-50%) scale(${o.pop}) rotate(${rot * 0.3}deg)`, opacity: 1, offset: o.popAt },
+        {
+          // Still fully visible two thirds of the way up, so they're seen rising past the head.
+          transform: `translate(calc(-50% + ${spread * 0.7}px), calc(-50% - ${rise * 0.7}px)) scale(0.95) rotate(${rot * 0.7}deg)`,
+          opacity: 1,
+          offset: 0.65,
+        },
+        { transform: `translate(calc(-50% + ${spread}px), calc(-50% - ${rise}px)) scale(0.7) rotate(${rot}deg)`, opacity: 0 },
+      ],
+      { duration: rand(o.durationMs), fill: "forwards" },
+    )
+      .finished.then(() => p.remove())
+      .catch(() => p.remove());
   }
 
   // ---- LASER POINTER ----
@@ -521,60 +537,24 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     }, POUNCE_MS + 150);
   }
 
-  // Stars rise from where the dot was caught, in waves like the treat's hearts, floating
-  // up past the cat's head.
+  // Stars rise from where the dot was caught, floating up past the cat's head.
   function spawnStarWaves(x: number, y: number, scale: number) {
-    [
-      { delay: 0, count: 10 },
-      { delay: 900, count: 9 },
-      { delay: 1800, count: 7 },
-      { delay: 2700, count: 5 },
-    ].forEach(({ delay, count }) => {
-      later(() => {
-        for (let i = 0; i < count; i++) later(() => spawnOneStar(x, y, scale), i * 85);
-      }, delay);
-    });
-  }
-
-  function spawnOneStar(x: number, y: number, scale: number) {
     const glyphs = ["✦", "✧", "★", "✶"];
-    const star = document.createElement("div");
-    star.className = "star-particle";
-    star.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
-    star.style.left = x + (Math.random() - 0.5) * 80 * scale + "px";
-    star.style.top = y + (Math.random() - 0.5) * 24 * scale + "px";
-    star.style.fontSize = (12 + Math.random() * 16) * scale + "px";
-    root.appendChild(star);
-
-    const spread = (Math.random() - 0.5) * 180 * scale;
-    const rise = (140 + Math.random() * 130) * scale;
-    const rot = (Math.random() - 0.5) * 90;
-    const dur = 1300 + Math.random() * 700;
-
-    star
-      .animate(
-        [
-          { transform: "translate(-50%,-50%) scale(0) rotate(0deg)", opacity: 0, easing: "ease-out" },
-          {
-            transform: `translate(-50%,-50%) scale(1.3) rotate(${rot * 0.3}deg)`,
-            opacity: 1,
-            offset: 0.15,
-          },
-          {
-            // Still fully visible two thirds of the way up, so they're seen rising past the head.
-            transform: `translate(calc(-50% + ${spread * 0.7}px), calc(-50% - ${rise * 0.7}px)) scale(0.95) rotate(${rot * 0.7}deg)`,
-            opacity: 1,
-            offset: 0.65,
-          },
-          {
-            transform: `translate(calc(-50% + ${spread}px), calc(-50% - ${rise}px)) scale(0.7) rotate(${rot}deg)`,
-            opacity: 0,
-          },
-        ],
-        { duration: dur, fill: "forwards" },
-      )
-      .finished.then(() => star.remove())
-      .catch(() => star.remove());
+    spawnRisingWaves([10, 9, 7, 5], {
+      className: "star-particle",
+      glyph: () => glyphs[Math.floor(Math.random() * glyphs.length)],
+      x,
+      y,
+      jitterX: 80 * scale,
+      jitterY: 24 * scale,
+      size: [12 * scale, 28 * scale],
+      spread: 180 * scale,
+      rise: [140 * scale, 270 * scale],
+      spin: 90,
+      durationMs: [1300, 2000],
+      pop: 1.3,
+      popAt: 0.15,
+    });
   }
 
   const onPointer = (e: PointerEvent) => moveDot(e.clientX, e.clientY);

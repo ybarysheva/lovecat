@@ -42,7 +42,7 @@ On Vercel, if the Redis env vars are missing, creating a cat returns a clear "St
 ## Where things are
 
 - `components/Cat.tsx` and `components/cat.css`: the cat (markup and behaviour).
-- `scripts/dither-textures.mjs` and `public/tex/`: the shaded 1-bit textures for the cat, treat bag and laser pointer (Obra Dinn-style: each part lit from the upper left and ordered-dithered into ink and paper). After changing a part's size or position in `cat.css`, run `npm run textures` to regenerate them.
+- `scripts/dither-textures.ts` and `public/tex/`: the shaded 1-bit textures for the cat, treat bag and laser pointer (Obra Dinn-style: each part lit from the upper left and ordered-dithered into ink and paper). After changing a part's size or position in `cat.css`, run `npm run textures` to regenerate them.
 - `components/room.ts`: the background: light wallpaper of paw prints and fish-bone skeletons, a prewar Brooklyn-style baseboard, and hardwood strip flooring in gentle perspective, all in fine light dither, fading out toward the sides. Lined up with the cat on any screen.
 - `components/vines.ts`: pothos vines: an evenly leaved, rounded swag across the top-left corner with a long strand trailing from its lowest point, and a short strand further right. Only the ends of the two strands move, gently.
 - `components/fly.ts`: the occasional fly (every 25–50s, first after 8–20s): it flies in from the left, right or top, darts around above the cat (quick zips, sudden stops, twitchy hovers, never below its ears), and zips off. The cat's pupils follow it and its tail goes wild. No flies while the laser is on.
@@ -50,6 +50,7 @@ On Vercel, if the Redis env vars are missing, creating a cat returns a clear "St
 - `components/Builder.tsx`: the builder page.
 - `lib/starter-notes.ts`: the notes senders can pick from. Edit freely; existing cats keep their own copy.
 - `app/page.tsx`: the landing page (demo cat). `app/make/page.tsx`: the builder.
+- `lib/palette.ts`: the two colours (ink and paper) and the dither helpers shared by everything drawn on the page and the texture script. The CSS has the same colours as `--ink` and `--paper` in `app/globals.css`.
 - `lib/card.ts`: the shape of a cat and its limits (name 40 characters, up to 50 notes of 200 characters), shared by the builder and the API.
 - `app/api/cards/route.ts`: creates a cat (rate limit, validation, save).
 - `app/c/[id]/`: the cat page and its link-preview image.

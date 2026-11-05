@@ -1,10 +1,8 @@
 import { ImageResponse } from "next/og";
+import { INK_HEX as INK, PAPER_HEX as PAPER } from "./palette";
 
 // The link preview image (1200×630) shown when a link is pasted into a chat.
 export const OG_SIZE = { width: 1200, height: 630 };
-
-const INK = "#1C1410";
-const PAPER = "#D4C5A9";
 
 /** A simple ink cat face, drawn as SVG so the image needs no external assets. */
 function CatFace() {

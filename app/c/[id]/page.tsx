@@ -14,7 +14,7 @@ const robots = { index: false, follow: false, nocache: true };
 // cache() so the metadata and the page share one read per request.
 const load = cache(async (id: string) => {
   try {
-    return { card: await readCard(id.toLowerCase()), error: null };
+    return { card: await readCard(id), error: null };
   } catch (e) {
     if (e instanceof StorageNotConfiguredError) return { card: null, error: e.message };
     throw e;

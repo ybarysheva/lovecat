@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono } from "next/font/google";
+import { PAPER_HEX } from "@/lib/palette";
 import "./globals.css";
 
 const mono = IBM_Plex_Mono({
@@ -19,7 +20,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#D4C5A9",
+  themeColor: PAPER_HEX,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
