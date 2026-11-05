@@ -45,7 +45,7 @@ On Vercel, if the Redis env vars are missing, creating a cat returns a clear "St
 - `scripts/dither-textures.mjs` and `public/tex/`: the shaded 1-bit textures for the cat, treat bag and laser pointer (Obra Dinn-style: each part lit from the upper left and ordered-dithered into ink and paper). After changing a part's size or position in `cat.css`, run `npm run textures` to regenerate them.
 - `components/room.ts`: the background, the corner of a room: light wallpaper of paw prints and fish bones, a baseboard and a lightly dithered floor that fade out toward the sides, lined up with the cat on any screen.
 - `components/vines.ts`: pothos vines: an evenly leaved, rounded swag across the top-left corner with a long strand trailing from its lowest point, and a short strand further right. Only the ends of the two strands move, gently.
-- `components/fly.ts`: the occasional fly (every 25–50s, first after 8–20s): it flies in from the left, right or top, buzzes around the cat with little hovers, and flies off. The cat's pupils follow it and its tail goes wild. No flies while the laser is on.
+- `components/fly.ts`: the occasional fly (every 25–50s, first after 8–20s): it flies in from the left, right or top, darts around above the cat (quick zips, sudden stops, twitchy hovers, never below its ears), and zips off. The cat's pupils follow it and its tail goes wild. No flies while the laser is on.
 - `components/tail.ts`: the tail's shape and swish (a tapered curve with a wave running along it; faster during laser play).
 - `components/Builder.tsx`: the builder page.
 - `lib/starter-notes.ts`: the notes senders can pick from. Edit freely; existing cats keep their own copy.
