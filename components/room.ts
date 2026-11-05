@@ -179,17 +179,29 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
     const first = Math.floor((0 - cx - shift) / sx) - 1;
     const last = Math.ceil((w - cx - shift) / sx) + 1;
     for (let col = first; col <= last; col++) {
+      // Hand-placed feel: a fixed (not reshuffled) random choice of motif, a small nudge
+      // off the grid, a slight tilt, and some fish facing the other way.
+      const r = (k: number) => hash(row * 7919 + col * 104729 + k * 31337);
+      const isPaw = r(1) < 0.5;
+      const nudgeX = (r(2) - 0.5) * 22 * s;
+      const nudgeY = (r(3) - 0.5) * 18 * s;
+      const tilt = ((r(4) - 0.5) * (isPaw ? 50 : 30) * Math.PI) / 180;
+      const flip = !isPaw && r(5) < 0.4 ? -1 : 1;
       // Snap each motif to the 8px dither grid so every one gets exactly the same dots
       // (otherwise some come out darker than others, depending on where they land).
-      const x = Math.round((cx + shift + col * sx) / 8) * 8;
-      const ySnapped = Math.round(y / 8) * 8;
-      // Alternate motifs along the row, offset each row so they checker.
-      if ((col + row) % 2 === 0) drawPaw(ctx, x, ySnapped, WALLPAPER.pawSize * s);
+      const x = Math.round((cx + shift + col * sx + nudgeX) / 8) * 8;
+      const ySnapped = Math.round((y + nudgeY) / 8) * 8;
+      ctx.save();
+      ctx.translate(x, ySnapped);
+      ctx.rotate(tilt);
+      ctx.scale(flip, 1);
+      if (isPaw) drawPaw(ctx, 0, 0, WALLPAPER.pawSize * s);
       else {
         ctx.fillStyle = "#f00";
-        drawFishBone(ctx, x, ySnapped, WALLPAPER.fishSize * s);
+        drawFishBone(ctx, 0, 0, WALLPAPER.fishSize * s);
         ctx.fillStyle = "#000";
       }
+      ctx.restore();
     }
   }
   const motifs = ctx.getImageData(0, 0, w, h).data;
