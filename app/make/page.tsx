@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Builder from "@/components/Builder";
+import Builder from "@/components/builder/Builder";
 
 export const metadata: Metadata = {
   title: "Make a cat · send-a-cat",

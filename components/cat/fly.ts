@@ -5,6 +5,7 @@
 // it's around (the caller checks `active`).
 
 import { INK_HEX as INK, PAPER_HEX as PAPER } from "@/lib/palette";
+import type { Later } from "./timers";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -51,7 +52,7 @@ type Options = {
   allowed: () => boolean;
   onMove: (x: number, y: number) => void;
   onEnd: () => void;
-  later: (fn: () => void, ms: number) => ReturnType<typeof setTimeout>;
+  later: Later;
 };
 
 export function createFlies({ root, catRect, allowed, onMove, onEnd, later }: Options) {

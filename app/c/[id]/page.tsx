@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import Cat from "@/components/Cat";
+import Cat from "@/components/cat/Cat";
 import { readCard } from "@/lib/cards";
 import { StorageNotConfiguredError } from "@/lib/kv";
 

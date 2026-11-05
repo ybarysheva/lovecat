@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Cat from "@/components/Cat";
+import Cat from "@/components/cat/Cat";
 import { STARTER_NOTES } from "@/lib/starter-notes";
 
 // Placeholder: the demo cat says the builder's starter notes until it has its own.

@@ -5,7 +5,7 @@
 // 1×1px "cat pixel"; CSS scales them up with image-rendering: pixelated. The dither
 // grid is in the cat's own coordinates, so neighbouring parts share one continuous grid.
 //
-// Run after changing a part's size or position in components/cat.css:
+// Run after changing a part's size or position in components/cat/cat.css:
 //   npm run textures
 
 import fs from "node:fs";
@@ -53,7 +53,7 @@ type Part = {
   scale?: number; // store this many texture pixels per cat pixel
 };
 
-// Every textured part, in the cat's 300×340 coordinates (see components/cat.css).
+// Every textured part, in the cat's 300×340 coordinates (see components/cat/cat.css).
 const PARTS: Part[] = [
   { name: "head", x: 92, y: 54, w: 116, h: 112, material: "fur", tone: (u, v) => sphere(u, v) },
   { name: "body", x: 64, y: 162, w: 172, h: 104, material: "fur", tone: (u, v) => sphere(u, v) * 0.92 },

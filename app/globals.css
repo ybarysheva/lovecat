@@ -203,6 +203,7 @@ textarea.input { resize: vertical; min-height: 76px; }
 .result-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .result-row .btn { flex: 1 1 120px; }
 .result .again { margin-top: 14px; }
+.result-error { margin-top: 10px; }
 .linkish {
   background: none;
   border: 0;

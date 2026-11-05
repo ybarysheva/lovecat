@@ -2,74 +2,30 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import Cat from "./Cat";
+import Cat from "../cat/Cat";
 import { clean, LIMITS, validateCard, type FieldErrors } from "@/lib/card";
 import { STARTER_NOTES } from "@/lib/starter-notes";
+import ReadyScreen from "./ReadyScreen";
+import { clearDraft, EMPTY_DRAFT, useDraft, type Draft } from "./useDraft";
 
-type Draft = { to: string; from: string; notes: string[] };
-
-const DRAFT_KEY = "send-a-cat:draft";
-const EMPTY: Draft = { to: "", from: "", notes: [] };
-
-// The draft is a per-browser convenience, so storage failures (private mode etc.) are ignored.
-function loadDraft(): Draft {
-  try {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) return EMPTY;
-    const d = JSON.parse(raw) as Partial<Draft>;
-    return {
-      to: typeof d.to === "string" ? d.to : "",
-      from: typeof d.from === "string" ? d.from : "",
-      notes: Array.isArray(d.notes) ? d.notes.filter((n) => typeof n === "string") : [],
-    };
-  } catch {
-    return EMPTY;
-  }
-}
-function saveDraft(d: Draft) {
-  try {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
-  } catch {}
-}
-function clearDraft() {
-  try {
-    localStorage.removeItem(DRAFT_KEY);
-  } catch {}
-}
+// Errors shown under a field: the card's own fields, plus the write-your-own box.
+type Errors = FieldErrors & { write?: string };
 
 export default function Builder() {
-  const [draft, setDraft] = useState<Draft>(EMPTY);
-  const [loaded, setLoaded] = useState(false);
+  const [draft, setDraft] = useDraft();
   const [writing, setWriting] = useState("");
   // Errors about one field are shown under that field; `error` is for everything else
   // (connection, server, copy), shown by the Create link button.
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors & { write?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<Errors>({});
   const [creating, setCreating] = useState(false);
   const [preview, setPreview] = useState(false);
   const [link, setLink] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    if (!copied) return;
-    const t = setTimeout(() => setCopied(false), 2000);
-    return () => clearTimeout(t);
-  }, [copied]);
-  const [canShare, setCanShare] = useState(false);
   const toRef = useRef<HTMLInputElement>(null);
   const fromRef = useRef<HTMLInputElement>(null);
   const notesRef = useRef<HTMLElement>(null);
   const previewBtnRef = useRef<HTMLButtonElement>(null);
   const backBtnRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    setDraft(loadDraft());
-    setLoaded(true);
-    setCanShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
-  }, []);
-
-  useEffect(() => {
-    if (loaded) saveDraft(draft);
-  }, [draft, loaded]);
 
   // The full-screen preview: no page scrolling behind it, focus moves into it, Escape
   // closes it, and focus goes back to the Preview button afterwards.
@@ -102,7 +58,7 @@ export default function Builder() {
   };
 
   /** Shows field errors and takes the person to the first one. */
-  const showFieldErrors = (errors: FieldErrors & { write?: string }) => {
+  const showFieldErrors = (errors: Errors) => {
     setFieldErrors(errors);
     if (errors.to) toRef.current?.focus();
     else if (errors.from) fromRef.current?.focus();
@@ -164,7 +120,6 @@ export default function Builder() {
       }
       if (!res.ok || !body.id) throw new Error(body.error || "Couldn't create the link. Try again.");
       setLink(`${window.location.origin}/c/${body.id}`);
-      setCopied(false);
       clearDraft();
       window.scrollTo({ top: 0 });
     } catch (e) {
@@ -174,68 +129,15 @@ export default function Builder() {
     }
   };
 
-  const copy = async () => {
-    if (!link) return;
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopied(true);
-    } catch {
-      setError("Couldn't copy. Press and hold the link to copy it.");
-    }
-  };
-
-  const share = async () => {
-    if (!link) return;
-    const name = clean(draft.to);
-    try {
-      await navigator.share({ title: name ? `A cat for ${name}` : "A cat for you", url: link });
-    } catch {
-      // Cancelled or unsupported: nothing to do.
-    }
-  };
-
   const startOver = () => {
     setLink(null);
-    setDraft(EMPTY);
+    setDraft(EMPTY_DRAFT);
     setWriting("");
     setError(null);
     setFieldErrors({});
   };
 
-  if (link) {
-    const name = clean(draft.to);
-    return (
-      <main className="builder">
-        <p className="brand">
-          <Link href="/">[ send-a-cat ]</Link>
-        </p>
-        <section className="panel result" aria-live="polite">
-          <h2>{name ? `${name}'s cat is ready` : "Your cat is ready"}</h2>
-          <p className="hint">Anyone with this link can pet the cat and see the messages.</p>
-          <output className="link-box">{link}</output>
-          <div className="result-row">
-            <button type="button" className="btn btn-primary" onClick={copy}>
-              {copied ? "Copied ✓" : "Copy link"}
-            </button>
-            {canShare && (
-              <button type="button" className="btn" onClick={share}>
-                Share…
-              </button>
-            )}
-            <a className="btn" href={link} target="_blank" rel="noopener">
-              Open
-            </a>
-          </div>
-          {error && <p className="error" style={{ marginTop: 10 }}>{error}</p>}
-          <div className="again">
-            <button type="button" className="linkish" onClick={startOver}>
-              Send another cat
-            </button>
-          </div>
-        </section>
-      </main>
-    );
-  }
+  if (link) return <ReadyScreen link={link} name={clean(draft.to)} onAnother={startOver} />;
 
   const previewTo = clean(draft.to) || null;
   const previewFrom = clean(draft.from) || null;
