@@ -42,6 +42,7 @@ On Vercel, if the Redis env vars are missing, creating a cat returns a clear "St
 ## Where things are
 
 - `components/Cat.tsx` and `components/cat.css`: the cat (markup, behaviour, sounds).
+- `components/tail.ts`: the tail's shape and swish (a tapered curve with a wave running along it; faster during laser play).
 - `components/Builder.tsx`: the builder page.
 - `lib/starter-notes.ts`: the notes senders can pick from. Edit freely; existing cats keep their own copy.
 - `app/page.tsx`: the landing page (demo cat). `app/make/page.tsx`: the builder.

@@ -131,11 +131,6 @@
   95%           { transform: rotate(14deg); }
   98%           { transform: rotate(4deg); }
 }
-@keyframes tailTipSway {
-  0%, 100% { transform: rotate(0deg); }
-  30%      { transform: rotate(7deg); }
-  70%      { transform: rotate(-5deg); }
-}
 
 /* ---- LASER REACTIONS ---- */
 
@@ -144,10 +139,7 @@
   transition: transform 0.18s ease-out;
 }
 
-/* 2. Tail flick — speed up tailTipSway */
-.tail-alert .cat-tail-tip {
-  animation-duration: 0.55s !important;
-}
+/* 2. Tail flick — the tail swishes faster (in JS: components/tail.ts, TAIL_SWISH) */
 
 /* 3. Airplane ears — splay outward when alert */
 .ears-alert .cat-ear--l {
@@ -319,30 +311,15 @@
 }
 
 /* ---------- TAIL (75% dark) ---------- */
+/* An SVG over the whole cat; the path is drawn and animated by components/tail.ts. */
 .cat-tail {
   position: absolute;
-  top: 183px;
-  left: 219px;
-  width: 22px;
-  height: 86px;
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4'><rect width='4' height='4' fill='%231C1410'/><rect x='2' y='0' width='2' height='2' fill='%23D4C5A9'/></svg>");
-  background-size: 4px 4px;
-  border-radius: 11px;
-  transform: rotate(17deg);
-  transform-origin: top center;
-  z-index: 8;
-}
-.cat-tail-tip {
-  position: absolute;
-  bottom: -22px;
-  left: -10px;
-  width: 42px;
-  height: 28px;
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4'><rect width='4' height='4' fill='%231C1410'/><rect x='2' y='0' width='2' height='2' fill='%23D4C5A9'/></svg>");
-  background-size: 4px 4px;
-  border-radius: 54% 46% 46% 54% / 58% 58% 42% 42%;
-  transform-origin: center top;
-  animation: tailTipSway 3.2s ease-in-out infinite;
+  inset: 0;
+  width: 300px;
+  height: 340px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 8; /* behind the body (10) and paws (15), in front of the cloud (5) */
 }
 
 /* ---------- BODY (75% dark, loaf) ---------- */

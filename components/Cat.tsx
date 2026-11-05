@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
+import { TAIL_SWISH, tailPath } from "./tail";
 import "./cat.css";
 
 type Props = {
@@ -18,6 +19,8 @@ export default function Cat({ to, from, notes, footer }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const notesRef = useRef(notes);
   notesRef.current = notes;
+  // Unique per cat so the tail's pattern id never clashes; useId is stable between server and browser.
+  const ditherId = "cat-dither-" + useId().replace(/[^a-zA-Z0-9_-]/g, "");
 
   useEffect(() => {
     const root = rootRef.current;
@@ -58,9 +61,17 @@ export default function Cat({ to, from, notes, footer }: Props) {
               <div className="css-cat">
                 <div className="cat-cloud"></div>
 
-                <div className="cat-tail">
-                  <div className="cat-tail-tip"></div>
-                </div>
+                {/* Tail: one tapered curve, animated in startCat. The pattern is the body's 75% dither,
+                    in the cat's own coordinates so it lines up with the body's. */}
+                <svg className="cat-tail" viewBox="0 0 300 340" aria-hidden="true">
+                  <defs>
+                    <pattern id={ditherId} width="4" height="4" patternUnits="userSpaceOnUse">
+                      <rect width="4" height="4" fill="#1C1410" />
+                      <rect x="2" y="0" width="2" height="2" fill="#D4C5A9" />
+                    </pattern>
+                  </defs>
+                  <path className="cat-tail-path" d={tailPath(0)} fill={`url(#${ditherId})`} />
+                </svg>
 
                 <div className="cat-body">
                   <div className="cat-stripe cat-stripe--1"></div>
@@ -128,6 +139,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
 
   const bubble = $("[data-bubble]");
+  const tailEl = root.querySelector<SVGPathElement>(".cat-tail-path")!;
   const bubbleText = $("[data-bubble-text]");
   const squish = $("[data-squish]");
   const treatBag = $("[data-treat]");
@@ -688,6 +700,19 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     else startLaser(e.clientX, e.clientY);
   };
 
+  // ---- TAIL ----
+  // Continuous swish; faster while the laser is on (the cat's "tail-alert" state). The
+  // phase is accumulated so changing speed never makes the tail jump.
+  let tailPhase = 0;
+  let tailLast = performance.now();
+  let tailFrame = requestAnimationFrame(function swish(now) {
+    const period = cssCat.classList.contains("tail-alert") ? TAIL_SWISH.alertPeriodMs : TAIL_SWISH.periodMs;
+    tailPhase += ((now - tailLast) / period) * Math.PI * 2;
+    tailLast = now;
+    tailEl.setAttribute("d", tailPath(tailPhase));
+    tailFrame = requestAnimationFrame(swish);
+  });
+
   // ---- EVENTS ----
   const onDocClick = (e: MouseEvent) => {
     const target = e.target as Element | null;
@@ -705,6 +730,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
 
   return () => {
     disposed = true;
+    cancelAnimationFrame(tailFrame);
     timers.forEach(clearTimeout);
     timers.clear();
     audio.forEach((ctx) => ctx.close().catch(() => {}));
