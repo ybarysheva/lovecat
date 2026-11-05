@@ -59,30 +59,48 @@ function drawPaw(ctx: CanvasRenderingContext2D, x: number, y: number, size: numb
   ctx.fill();
 }
 
+/**
+ * A fish skeleton in fine lines, pointing left: outlined head with an eye, a spine,
+ * ribs angled back from it, and a forked tail. Drawn in the canvas's current stroke
+ * color; the wallpaper prints these as solid thin ink lines (not dithered).
+ */
 function drawFishBone(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
   const half = size / 2;
-  const line = Math.max(2, size * 0.12);
-  // Head (pointing left).
+  const headEnd = x - half + size * 0.3;
+  const tailStart = x + half - size * 0.17;
+  ctx.lineWidth = Math.max(1.2, size * 0.042);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   ctx.beginPath();
-  ctx.moveTo(x - half, y);
-  ctx.lineTo(x - half + size * 0.28, y - size * 0.2);
-  ctx.lineTo(x - half + size * 0.28, y + size * 0.2);
+  // Head: a rounded wedge.
+  ctx.moveTo(headEnd, y - size * 0.19);
+  ctx.quadraticCurveTo(x - half + size * 0.02, y - size * 0.14, x - half, y);
+  ctx.quadraticCurveTo(x - half + size * 0.02, y + size * 0.14, headEnd, y + size * 0.19);
   ctx.closePath();
-  ctx.fill();
   // Spine.
-  ctx.fillRect(x - half + size * 0.25, y - line / 2, size * 0.6, line);
-  // Ribs.
-  for (let i = 0; i < 3; i++) {
-    const rx = x - half + size * (0.42 + i * 0.13);
-    const rh = size * (0.17 - i * 0.025);
-    ctx.fillRect(rx - line / 2, y - rh, line, rh * 2);
+  ctx.moveTo(headEnd, y);
+  ctx.lineTo(tailStart, y);
+  // Ribs: pairs angled back toward the tail, getting shorter.
+  const ribs = 4;
+  for (let i = 0; i < ribs; i++) {
+    const rx = headEnd + (tailStart - headEnd) * ((i + 0.6) / (ribs + 0.2));
+    const len = size * (0.2 - i * 0.03);
+    const back = size * 0.07;
+    ctx.moveTo(rx, y);
+    ctx.lineTo(rx + back, y - len);
+    ctx.moveTo(rx, y);
+    ctx.lineTo(rx + back, y + len);
   }
-  // Tail.
-  ctx.beginPath();
-  ctx.moveTo(x + half - size * 0.16, y);
+  // Tail: a forked fin.
+  ctx.moveTo(tailStart, y);
   ctx.lineTo(x + half, y - size * 0.17);
+  ctx.lineTo(x + half - size * 0.06, y);
   ctx.lineTo(x + half, y + size * 0.17);
   ctx.closePath();
+  ctx.stroke();
+  // Eye.
+  ctx.beginPath();
+  ctx.arc(x - half + size * 0.13, y - size * 0.03, Math.max(0.8, size * 0.03), 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -102,7 +120,10 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
 
   // 1. Wallpaper motifs, drawn as shapes, then snapped to 1-bit below.
   ctx.clearRect(0, 0, w, h);
+  // Paw prints are filled in black (printed as a light dither); fish bones are drawn in
+  // red (printed as solid thin lines). The color only tells the two apart below.
   ctx.fillStyle = "#000";
+  ctx.strokeStyle = "#f00";
   const sx = WALLPAPER.spacingX * s;
   const sy = WALLPAPER.spacingY * s;
   const margin = WALLPAPER.fishSize * s; // keep motifs clear of the baseboard
@@ -120,7 +141,11 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
       const ySnapped = Math.round(y / 8) * 8;
       // Alternate motifs along the row, offset each row so they checker.
       if ((col + row) % 2 === 0) drawPaw(ctx, x, ySnapped, WALLPAPER.pawSize * s);
-      else drawFishBone(ctx, x, ySnapped, WALLPAPER.fishSize * s);
+      else {
+        ctx.fillStyle = "#f00";
+        drawFishBone(ctx, x, ySnapped, WALLPAPER.fishSize * s);
+        ctx.fillStyle = "#000";
+      }
     }
   }
   const motifs = ctx.getImageData(0, 0, w, h).data;
@@ -132,7 +157,9 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
     const row = BAYER8[y & 7];
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
-      let ink = motifs[i + 3] > 127 && TONE.motif > (row[x & 7] + 0.5) / 64;
+      const motif = motifs[i + 3];
+      const isLine = motifs[i] > 127; // red: fish bone lines, printed solid
+      let ink = isLine ? motif > 110 : motif > 127 && TONE.motif > (row[x & 7] + 0.5) / 64;
       if (!ink && y >= baseTop) {
         const side = 1 - smoothstep(FADE.from * s, FADE.to * s, Math.abs(x + 0.5 - cx));
         let tone = 0;
