@@ -29,6 +29,19 @@
   image-rendering: pixelated;
 }
 
+/* Pothos vines along the top (components/vines.ts): behind the cat, the bubble and
+   the treat bag and laser, in front of the wallpaper. */
+.cat-vines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  overflow: visible;
+}
+
 /* vignette */
 .cat-scene::after {
   content: '';

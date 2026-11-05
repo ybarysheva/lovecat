@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 import { drawRoom } from "./room";
 import { TAIL_SWISH, tailPath } from "./tail";
+import { createVines } from "./vines";
 import "./cat.css";
 
 type Props = {
@@ -33,6 +34,8 @@ export default function Cat({ to, from, notes, footer }: Props) {
     <div ref={rootRef} className="cat-scene">
       {/* Background: the corner of a room with light wallpaper, drawn in startCat (components/room.ts). */}
       <canvas className="cat-bg" aria-hidden="true"></canvas>
+      {/* Pothos vines draped along the top, built and animated in startCat (components/vines.ts). */}
+      <svg className="cat-vines" aria-hidden="true"></svg>
       {/* LASER POINTER — fixed top-right, below treat bag */}
       <div className="laser-btn" data-laser role="button" aria-label="Play with the laser pointer">
         <div className="laser-body"></div>
@@ -735,11 +738,14 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   // phase is accumulated so changing speed never makes the tail jump.
   let tailPhase = 0;
   let tailLast = performance.now();
+  const vines = createVines(root.querySelector<SVGSVGElement>(".cat-vines")!, "vines-" + Math.random().toString(36).slice(2));
+  vines.layout(root.getBoundingClientRect().width);
   let tailFrame = requestAnimationFrame(function swish(now) {
     const period = cssCat.classList.contains("tail-alert") ? TAIL_SWISH.alertPeriodMs : TAIL_SWISH.periodMs;
     tailPhase += ((now - tailLast) / period) * Math.PI * 2;
     tailLast = now;
     tailEl.setAttribute("d", tailPath(tailPhase));
+    vines.frame(now);
     tailFrame = requestAnimationFrame(swish);
   });
 
@@ -750,6 +756,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   let bgTimer: ReturnType<typeof setTimeout> | null = null;
   function drawBackground() {
     const scene = root.getBoundingClientRect();
+    vines.layout(scene.width);
     const cat = catHover.getBoundingClientRect();
     drawRoom(bgCanvas, scene.width, scene.height, {
       left: cat.left - scene.left,
