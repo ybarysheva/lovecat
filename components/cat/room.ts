@@ -47,7 +47,7 @@ const TONE = {
 };
 // Fading out toward the sides: full near the cat, gone by `to` from its center. `room` fades
 // the baseboard and floor; `wall` fades the wallpaper too.
-const FADE = { from: 200, to: 620, room: true, wall: false };
+const FADE = { from: 200, to: 620, room: true, wall: true };
 // Hardwood strip flooring, as in a prewar Brooklyn apartment: narrow boards running away
 // from the wall, drawn in perspective (seams fan out toward you from a vanishing point
 // above the floor line), with staggered joints where boards end. In the cat's units.
@@ -162,10 +162,11 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
     const first = Math.floor((0 - cx - shift) / sx) - 1;
     const last = Math.ceil((w - cx - shift) / sx) + 1;
     for (let col = first; col <= last; col++) {
-      // Hand-placed feel: a fixed (not reshuffled) random choice of motif, a small nudge
-      // off the grid, a slight tilt, and some fish facing the other way.
+      // Hand-placed feel, fixed (not reshuffled): paws and fish mostly alternate, with about
+      // 1 in 5 swapped so it's not a strict checkerboard (but never clumps into a patch of one
+      // kind); a small nudge off the grid, a slight tilt, and some fish facing the other way.
       const r = (k: number) => hash(row * 7919 + col * 104729 + k * 31337);
-      const isPaw = r(1) < 0.5;
+      const isPaw = ((col + row) % 2 === 0) !== r(1) < 0.2;
       const nudgeX = (r(2) - 0.5) * 22 * s;
       const nudgeY = (r(3) - 0.5) * 18 * s;
       const tilt = ((r(4) - 0.5) * (isPaw ? 50 : 30) * Math.PI) / 180;
