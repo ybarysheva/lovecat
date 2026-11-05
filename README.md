@@ -42,7 +42,7 @@ The first time on a new machine, run `npx playwright install chromium` before th
 
 ## Deploy
 
-1. Import this repo in Vercel. Pushes to the production branch deploy production.
+1. Import this repo in Vercel and set the production branch to `main` (Settings, Environments, Production, Branch Tracking). Pushes to `main` deploy production; other branches get preview deployments.
 2. Add storage: Vercel dashboard, the project, **Storage**, **Create Database**, **Upstash** (Redis), plan **Free**, connect to all environments (Production, Preview, Development). Choose the option where Vercel creates the Upstash account, so no separate signup is needed. This sets `KV_REST_API_URL` and `KV_REST_API_TOKEN` on the project. `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` also work.
 3. Redeploy so the new env vars take effect.
 4. Make production public: project, Settings, **Deployment Protection**. Vercel Authentication must not cover production, or recipients get a Vercel login screen. "Standard Protection" (previews only) is fine; "All Deployments" is not.
