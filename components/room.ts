@@ -1,6 +1,5 @@
 // The background: the corner of a room. The wall has a light wallpaper of small paw
-// prints and fish bones; below it a tall, prewar-style baseboard (drawn in fine, light
-// lines) and a lightly dithered floor, both fading
+// prints and fish bones; below it a baseboard and a lightly dithered floor, both fading
 // out toward the sides. Drawn in the cat's two colors (ink motifs, 1px ordered dither
 // for tones) and placed relative to the cat, so it lines up on any screen.
 
@@ -20,21 +19,7 @@ const BAYER8 = [
 
 // In the cat's units (the cat is 300×340); everything scales with the cat.
 const FLOOR_AT = 300; // floor line, in the cat's coordinates (through the cushion)
-// A tall prewar baseboard, as bands from its top down to the floor: fine light lines
-// (dotted, never solid) and soft shading suggest a shaped cap molding, a plain board,
-// and a small rounded shoe molding at the floor. Heights in the cat's units; `ink` is
-// how dark each band is (0 paper, 1 solid).
-const BASEBOARD: { h: number; ink: number }[] = [
-  { h: 1, ink: 0.62 }, // top edge of the cap
-  { h: 2, ink: 0.3 }, // rounded bead, in soft shade
-  { h: 1, ink: 0.5 },
-  { h: 2, ink: 0.08 }, // small cove
-  { h: 1, ink: 0.5 }, // where the cap meets the board
-  { h: 22, ink: 0 }, // the plain board, clean paper
-  { h: 1, ink: 0.5 }, // top of the shoe molding
-  { h: 3, ink: 0.3 }, // the rounded shoe, in a little shade
-  { h: 1, ink: 0.62 }, // where it meets the floor
-]
+const BASEBOARD = 14; // height of the baseboard above the floor line
 const WALLPAPER = {
   spacingX: 84, // between motifs in a row
   spacingY: 74, // between rows; odd rows shift half a step (a half-drop repeat)
@@ -45,6 +30,7 @@ const WALLPAPER = {
 const TONE = {
   motif: 0.32, // wallpaper is printed at about a third density, so it stays light
   fishLine: 0.5, // fish bone lines are dotted at half density, so they're as light as the paws
+  baseboard: 0.2,
   floor: 0.1,
 };
 // The corner fades out toward the sides: full near the cat, gone by `fadeTo` from its center.
@@ -133,11 +119,7 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
   const s = cat.scale;
   const cx = cat.left + 150 * s;
   const floorY = cat.top + FLOOR_AT * s;
-  // Each baseboard band as pixel rows (at least 1px each, so the fine lines never vanish).
-  const bands = BASEBOARD.map((b) => ({ px: Math.max(1, Math.round(b.h * s)), ink: b.ink }));
-  const baseTop = floorY - bands.reduce((sum, b) => sum + b.px, 0);
-  const baseRowInk: number[] = [];
-  for (const b of bands) for (let i = 0; i < b.px; i++) baseRowInk.push(b.ink);
+  const baseTop = floorY - BASEBOARD * s;
 
   // 1. Wallpaper motifs, drawn as shapes, then snapped to 1-bit below.
   ctx.clearRect(0, 0, w, h);
@@ -185,7 +167,9 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
       if (!ink && y >= baseTop) {
         const side = 1 - smoothstep(FADE.from * s, FADE.to * s, Math.abs(x + 0.5 - cx));
         let tone = 0;
-        if (y < floorY) tone = baseRowInk[Math.floor(y - baseTop)] ?? 0;
+        if (y < baseTop + 1) tone = 1; // the baseboard's top edge
+        else if (y < floorY) tone = TONE.baseboard;
+        else if (y < floorY + 1) tone = 0.8; // where the baseboard meets the floor
         else {
           tone = TONE.floor * (1 - smoothstep(0, 320 * s, y - floorY)); // floor, fading toward you
           // The bed's shadow, darkest right under its edge and fading out.
