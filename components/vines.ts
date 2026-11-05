@@ -1,8 +1,8 @@
 // Pothos vines in the top of the room: a short swag across the top-left corner, a long
 // strand hanging down on the left, and a short one further right (left of the treat bag).
 // The vines wander rather than hang straight, and the leaves vary in size, shape, tilt and
-// spacing, each on its own small curved stalk. Strands sway gently (a wave running from
-// where they hang to their tip, like the tail) and the swag breathes a little.
+// spacing, each on its own small curved stalk. Only the lower ends of the two strands move,
+// swaying gently (a wave running toward the tip, like the tail); the swag is still.
 // Drawn as SVG in the cat's ink; leaves are filled with a 1px ordered-dither pattern.
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -28,25 +28,23 @@ const BAYER8 = [
   [63, 31, 55, 23, 61, 29, 53, 21],
 ];
 
-// The swag across the top-left corner (CSS px from the top-left of the screen): it comes
-// in from the left edge and sags in an even, rounded curve before rising to the top edge.
 // Everything about the plant is sized by this, so it sits in scale with the cat and the
 // wallpaper (1 = the original, smaller plant).
 const K = 1.4;
 
+// The swag across the top-left corner (CSS px from the top-left of the screen): it comes
+// in from the left edge and sags in an even, rounded curve before rising to the top edge.
 const SWAG = {
   start: { x: -10 * K, y: 30 * K },
   end: { x: 150 * K, y: -6 },
   sag: 66 * K, // how far the middle hangs below the straight line between the ends
-  breathe: 0, // the swag stays still (set above 0 to let it rise and fall)
-  periodMs: 7000,
   leafEvery: 15 * K,
 };
 
 // Hanging strands: where they hang from (px from the left, given the screen width), how
 // long they are, how much they wander, and their sway.
 type StrandSpec = {
-  from: (w: number) => number;
+  from?: (w: number) => number; // not needed for a strand that comes down through the swag
   length: number;
   lean: number; // degrees off straight down
   wander: number; // degrees of built-in waviness
@@ -59,7 +57,7 @@ type StrandSpec = {
   bare?: number; // px either side of where it crosses the swag with no leaves (no clump)
 };
 const STRANDS: StrandSpec[] = [
-  { from: () => 0, throughSwag: true, bare: 19 * K, length: 165 * K, lean: 2, wander: 11, periodMs: 5600, phase: 0, seed: 11 },
+  { throughSwag: true, bare: 19 * K, length: 165 * K, lean: 2, wander: 11, periodMs: 5600, phase: 0, seed: 11 },
   { from: (w) => Math.min(w * 0.7, w - 95), length: 105 * K, lean: -3, wander: 9, periodMs: 4700, phase: 2.1, seed: 29 },
 ];
 // Only the lower ends of the strands move: the sway fades in over the last `swayFrom` of
@@ -139,10 +137,9 @@ function hangingSpine(x: number, y: number, spec: StrandSpec, t: number): Point[
 }
 
 /** Points along the corner swag: an even sag between its two ends (a parabola off the
- *  straight line between them), rising and falling a little over time if `breathe` > 0. */
-function swagSpine(t: number): Point[] {
-  const sag = SWAG.sag * (1 + SWAG.breathe * Math.sin((t / SWAG.periodMs) * Math.PI * 2));
-  const { start: p0, end: p1 } = SWAG;
+ *  straight line between them). */
+function swagSpine(): Point[] {
+  const { start: p0, end: p1, sag } = SWAG;
   const n = 48;
   const pts: Point[] = [];
   for (let i = 0; i <= n; i++) {
@@ -179,11 +176,13 @@ function along(pts: Point[], at: number): Point | null {
 
 const pathOf = (pts: Point[]) => pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
 
-/** Builds the vines inside `svg`. Call layout() when the scene changes size and frame() every frame. */
+/** Builds the vines inside `svg`. Call layout() when the scene changes width and frame() every frame. */
 export function createVines(svg: SVGSVGElement, idPrefix: string) {
   const lit = `${idPrefix}-leaf-lit`;
   const shade = `${idPrefix}-leaf-shade`;
   let width = 0;
+  const swagPts = swagSpine(); // the swag never moves, so its shape is worked out once
+  const low = lowest(swagPts);
   let swag: Strand | null = null;
   let strands: { strand: Strand; spec: StrandSpec }[] = [];
 
@@ -274,6 +273,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
   }
 
   function layout(w: number) {
+    if (swag && w === width) return; // only a width change moves anything
     width = w;
     while (svg.firstChild) svg.removeChild(svg.firstChild);
     const defs = el("defs", {});
@@ -282,7 +282,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     svg.appendChild(defs);
     // Hanging strands first, so the swag's leaves sit over the top of them.
     // The swag doesn't move, so where it bottoms out is fixed.
-    const crossAt = lowest(swagSpine(0)).y - TOP; // length of a strand's part above the swag
+    const crossAt = low.y - TOP; // length of a strand's part above the swag
     strands = STRANDS.map((spec) => ({
       spec,
       strand: spec.throughSwag
@@ -290,6 +290,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
         : makeStrand(spec.length, STRAND.leafEvery, spec.seed, 0.3),
     }));
     swag = makeStrand(220 * K, SWAG.leafEvery, 7, 0.5, true);
+    place(swag, swagPts); // placed once; it doesn't move
   }
 
   function place(strand: Strand, pts: Point[]) {
@@ -313,9 +314,6 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
 
   function frame(t: number) {
     if (!swag) return;
-    const swagPts = swagSpine(t);
-    place(swag, swagPts);
-    const low = lowest(swagPts);
     for (const { strand, spec } of strands) {
       if (spec.throughSwag) {
         // Straight down from the top edge to the swag's lowest point, then hanging on below it.
@@ -324,7 +322,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
         for (let i = 0; i < steps; i++) above.push({ x: low.x, y: TOP + ((low.y - TOP) * i) / steps, angle: Math.PI / 2 });
         place(strand, [...above, ...hangingSpine(low.x, low.y, spec, t)]);
       } else {
-        place(strand, hangingSpine(spec.from(width), TOP, spec, t));
+        place(strand, hangingSpine(spec.from?.(width) ?? 0, TOP, spec, t));
       }
     }
   }

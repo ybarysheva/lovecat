@@ -116,7 +116,6 @@ textarea.input { resize: vertical; min-height: 76px; }
 .btn:active { transform: translate(1px, 1px); }
 .btn:disabled { opacity: 0.5; cursor: default; transform: none; }
 .btn-primary { background: var(--ink); color: var(--paper-light); }
-.btn-small { min-height: 36px; padding: 4px 12px; font-size: 0.85rem; }
 
 /* Your notes */
 .my-notes { list-style: none; margin-top: 14px; display: grid; gap: 8px; }

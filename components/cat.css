@@ -299,27 +299,6 @@
 }
 
 /* ================================================================
-   DITHER PATTERN HELPERS
-   ink = %231C1410   paper = %23D4C5A9
-   All bg patterns tile at 4×4 px (2 px per dither cell)
-   ================================================================ */
-/* 75% dark: 3 ink / 1 paper (top-right cell = paper) */
-.d75 {
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4'><rect width='4' height='4' fill='%231C1410'/><rect x='2' y='0' width='2' height='2' fill='%23D4C5A9'/></svg>");
-  background-size: 4px 4px;
-}
-/* 50% mid: checkerboard */
-.d50 {
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4'><rect width='4' height='4' fill='%23D4C5A9'/><rect x='0' y='0' width='2' height='2' fill='%231C1410'/><rect x='2' y='2' width='2' height='2' fill='%231C1410'/></svg>");
-  background-size: 4px 4px;
-}
-/* 25% light: 1 ink / 3 paper (bottom-right cell = ink) */
-.d25 {
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4'><rect width='4' height='4' fill='%23D4C5A9'/><rect x='2' y='2' width='2' height='2' fill='%231C1410'/></svg>");
-  background-size: 4px 4px;
-}
-
-/* ================================================================
    CSS-ART CAT — Obra Dinn ink + paper palette
    ================================================================ */
 .css-cat {
@@ -522,18 +501,7 @@
   border-radius: 50%;
 }
 
-/* Happy squint — treat caught! */
-@keyframes happySquint {
-  0%   { transform: scaleY(1);    }
-  15%  { transform: scaleY(0.08); }
-  65%  { transform: scaleY(0.1);  }
-  100% { transform: scaleY(1);    }
-}
-.cat-eye-l.happy, .cat-eye-r.happy {
-  animation: happySquint 0.95s ease-out forwards !important;
-}
-
-/* Extended happy — holds soft squint for full purr duration */
+/* Happy squint, held while purring (after a treat or a catch) */
 @keyframes catchAndPurr {
   0%   { transform: scaleY(1);    }
   6%   { transform: scaleY(0.08); }
@@ -815,4 +783,10 @@
   pointer-events: none;
   z-index: 1000;
   transform: translate(-50%, -50%);
+}
+
+/* "Reduce motion": stop the idle loops (breathing, ear twitch, purr vibration). The tail,
+   vines and fly are stopped in Cat.tsx. Reactions to taps still play. */
+@media (prefers-reduced-motion: reduce) {
+  .cat-body, .cat-face-group, .cat-ear--r, .css-cat.cat-purring { animation: none; }
 }

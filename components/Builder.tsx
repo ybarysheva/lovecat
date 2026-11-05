@@ -9,13 +9,12 @@ import { STARTER_NOTES } from "@/lib/starter-notes";
 type Draft = { to: string; from: string; notes: string[] };
 
 const DRAFT_KEY = "send-a-cat:draft";
-const OLD_DRAFT_KEY = "lovecat:draft"; // from before the rename; read once so a draft in progress isn't lost
 const EMPTY: Draft = { to: "", from: "", notes: [] };
 
 // The draft is a per-browser convenience, so storage failures (private mode etc.) are ignored.
 function loadDraft(): Draft {
   try {
-    const raw = localStorage.getItem(DRAFT_KEY) ?? localStorage.getItem(OLD_DRAFT_KEY);
+    const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return EMPTY;
     const d = JSON.parse(raw) as Partial<Draft>;
     return {
@@ -35,7 +34,6 @@ function saveDraft(d: Draft) {
 function clearDraft() {
   try {
     localStorage.removeItem(DRAFT_KEY);
-    localStorage.removeItem(OLD_DRAFT_KEY);
   } catch {}
 }
 
@@ -51,10 +49,17 @@ export default function Builder() {
   const [preview, setPreview] = useState(false);
   const [link, setLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(t);
+  }, [copied]);
   const [canShare, setCanShare] = useState(false);
   const toRef = useRef<HTMLInputElement>(null);
   const fromRef = useRef<HTMLInputElement>(null);
   const notesRef = useRef<HTMLElement>(null);
+  const previewBtnRef = useRef<HTMLButtonElement>(null);
+  const backBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setDraft(loadDraft());
@@ -66,13 +71,21 @@ export default function Builder() {
     if (loaded) saveDraft(draft);
   }, [draft, loaded]);
 
-  // No page scrolling behind the full-screen preview.
+  // The full-screen preview: no page scrolling behind it, focus moves into it, Escape
+  // closes it, and focus goes back to the Preview button afterwards.
   useEffect(() => {
     if (!preview) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    backBtnRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPreview(false);
+    };
+    document.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
+      previewBtnRef.current?.focus();
     };
   }, [preview]);
 
@@ -166,7 +179,6 @@ export default function Builder() {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     } catch {
       setError("Couldn't copy. Press and hold the link to copy it.");
     }
@@ -394,7 +406,7 @@ export default function Builder() {
             </p>
           )}
           <div className="actions-row">
-            <button type="button" className="btn" onClick={openPreview}>
+            <button ref={previewBtnRef} type="button" className="btn" onClick={openPreview}>
               Preview
             </button>
             <button type="button" className="btn btn-primary" onClick={create} disabled={creating}>
@@ -411,7 +423,7 @@ export default function Builder() {
             from={previewFrom}
             notes={draft.notes}
             footer={
-              <button type="button" onClick={() => setPreview(false)}>
+              <button ref={backBtnRef} type="button" onClick={() => setPreview(false)}>
                 ← back to editing
               </button>
             }

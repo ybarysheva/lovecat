@@ -16,8 +16,8 @@ type Props = {
   footer?: React.ReactNode;
 };
 
-// The cat from the original lil cat page. The markup is JSX; the behaviour is the
-// original script, scoped to this component's root and cleaned up on unmount.
+// The cat and its room. The markup is JSX; the behaviour is plain DOM code in startCat,
+// scoped to this component's root and cleaned up on unmount.
 export default function Cat({ to, from, notes, footer }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const notesRef = useRef(notes);
@@ -38,7 +38,7 @@ export default function Cat({ to, from, notes, footer }: Props) {
       {/* Pothos vines draped along the top, built and animated in startCat (components/vines.ts). */}
       <svg className="cat-vines" aria-hidden="true"></svg>
       {/* LASER POINTER — fixed top-right, below treat bag */}
-      <div className="laser-btn" data-laser role="button" aria-label="Play with the laser pointer">
+      <div className="laser-btn" data-laser role="button" tabIndex={0} aria-label="Play with the laser pointer">
         <div className="laser-body"></div>
         <div className="laser-tip"></div>
         <div className="laser-emitter"></div>
@@ -46,7 +46,7 @@ export default function Cat({ to, from, notes, footer }: Props) {
       </div>
 
       {/* TREAT BAG — fixed top-right corner */}
-      <div className="treat-bag" data-treat role="button" aria-label="Give the cat a treat">
+      <div className="treat-bag" data-treat role="button" tabIndex={0} aria-label="Give the cat a treat">
         <div className="bag-knot"></div>
         <div className="bag-body">
           <span className="bag-icon">★</span>
@@ -63,7 +63,7 @@ export default function Cat({ to, from, notes, footer }: Props) {
         </div>
 
         <div className="cat-hover">
-          <div className="cat-squish" data-squish role="button" aria-label="Pet the cat">
+          <div className="cat-squish" data-squish role="button" tabIndex={0} aria-label="Pet the cat">
             <div className="css-cat">
               <div className="cat-cloud"></div>
 
@@ -151,6 +151,10 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   const eyeR = $(".cat-eye-r");
   const pawL = $(".cat-paw--l");
   const pawR = $(".cat-paw--r");
+
+  // With "reduce motion" on, the idle animation stops: no flies, and the tail and vines
+  // hold still. (CSS does the same for the breathing and other idle loops.)
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // Every timer and element made here is tracked, so unmounting (e.g. closing the
   // builder's preview) leaves nothing running or floating on the page.
@@ -292,8 +296,8 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     }
 
     // Eyes: soft squint held for 4s
-    eyeL.classList.remove("happy", "eyes-purring");
-    eyeR.classList.remove("happy", "eyes-purring");
+    eyeL.classList.remove("eyes-purring");
+    eyeR.classList.remove("eyes-purring");
     void eyeL.offsetWidth;
     eyeL.classList.add("eyes-purring");
     eyeR.classList.add("eyes-purring");
@@ -503,12 +507,12 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     }
 
     later(() => {
-      // Paws land: the dot is gone, stars burst, purr.
+      // Paws land: the dot is gone and stars rise.
       dot.style.transition = "transform 0.08s ease-in, opacity 0.08s ease-in";
       dot.style.transform = "translate(-50%, -50%) scale(0)";
       dot.style.opacity = "0";
       spawnStarWaves(landing.x, landing.y, landing.scale);
-      startHappyState(false); // same squint, vibration and purr as the treat reward
+      startHappyState(false); // same squint and purr vibration as the treat reward
     }, impactMs);
 
     later(() => {
@@ -609,7 +613,11 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   const onLaserClick = (e: MouseEvent) => {
     if (catching) return; // let the catch finish; it turns the laser off itself
     if (laserDot) stopLaser();
-    else startLaser(e.clientX, e.clientY);
+    else if (e.detail === 0) {
+      // Pressed from the keyboard (no pointer position): start at the laser itself.
+      const r = laserBtn.getBoundingClientRect();
+      startLaser(r.left + r.width / 2, r.bottom);
+    } else startLaser(e.clientX, e.clientY);
   };
 
   // ---- FLY ----
@@ -618,7 +626,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   const flies = createFlies({
     root,
     catRect: () => cssCat.getBoundingClientRect(),
-    allowed: () => !laserDot && !catching,
+    allowed: () => !reduceMotion && !laserDot && !catching,
     onMove: (x, y) => {
       if (!laserDot) lookAt(x, y);
     },
@@ -637,8 +645,12 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   let tailAmp: number = TAIL_SWISH.amplitude;
   let tailLast = performance.now();
   const vines = createVines(root.querySelector<SVGSVGElement>(".cat-vines")!, "vines-" + Math.random().toString(36).slice(2));
-  vines.layout(root.getBoundingClientRect().width);
   let tailFrame = requestAnimationFrame(function swish(now) {
+    if (reduceMotion) {
+      tailEl.setAttribute("d", tailPath(0, 0));
+      vines.frame(0);
+      return; // draw once, still
+    }
     const crazy = flies.active;
     const period = crazy
       ? TAIL_SWISH.crazyPeriodMs
@@ -662,6 +674,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   function drawBackground() {
     const scene = root.getBoundingClientRect();
     vines.layout(scene.width);
+    if (reduceMotion) vines.frame(0); // the animation loop is off, so place them here
     const cat = catHover.getBoundingClientRect();
     drawRoom(bgCanvas, scene.width, scene.height, {
       left: cat.left - scene.left,
@@ -686,6 +699,14 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     if (e.key === "Escape" && isVisible) hideBubble();
   };
 
+  // The pet, treat and laser controls are role="button" elements: Enter and Space press them.
+  const onButtonKey = (e: KeyboardEvent) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).click();
+  };
+  for (const el of [squish, treatBag, laserBtn]) el.addEventListener("keydown", onButtonKey);
+
   squish.addEventListener("click", handlePet);
   treatBag.addEventListener("click", throwTreat);
   laserBtn.addEventListener("click", onLaserClick);
@@ -699,6 +720,7 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     bgObserver.disconnect();
     timers.forEach(clearTimeout);
     timers.clear();
+    for (const el of [squish, treatBag, laserBtn]) el.removeEventListener("keydown", onButtonKey);
     squish.removeEventListener("click", handlePet);
     treatBag.removeEventListener("click", throwTreat);
     laserBtn.removeEventListener("click", onLaserClick);
