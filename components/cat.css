@@ -220,7 +220,7 @@
 .cat-label {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.82rem;
-  color: #53493E; /* ink at 70% on paper */
+  color: #322922; /* ink at 88% on paper */
   background: #D4C5A9;
   padding: 3px 8px;
   letter-spacing: 0.06em;
@@ -229,7 +229,7 @@
 }
 .cat-from {
   font-size: 0.72rem;
-  color: #6F6455; /* ink at 55% on paper */
+  color: #41372F; /* ink at 80% on paper */
   background: #D4C5A9;
   padding: 2px 8px;
   letter-spacing: 0.06em;
