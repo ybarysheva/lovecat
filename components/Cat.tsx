@@ -115,7 +115,7 @@ export default function Cat({ to, from, notes, footer }: Props) {
               </div>
             </div>
           </div>
-      </div>
+        </div>
 
         <p className="cat-label">{to ? `[ pet the cat to receive love, ${to} ]` : "[ pet the cat to receive love ]"}</p>
         {from && <p className="cat-from">with love from {from}</p>}
