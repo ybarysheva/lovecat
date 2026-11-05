@@ -117,8 +117,12 @@ export default function Cat({ to, from, notes, footer }: Props) {
           </div>
         </div>
 
-        <p className="cat-label">{to ? `[ pet the cat to receive love, ${to} ]` : "[ pet the cat to receive love ]"}</p>
-        {from && <p className="cat-from">with love from {from}</p>}
+        <p className="cat-label">[ pet the cat to receive love ]</p>
+        {(from || to) && (
+          <p className="cat-from">
+            {from && to ? `a message from ${from} for ${to}` : from ? `a message from ${from}` : `a message for ${to}`}
+          </p>
+        )}
       </div>
 
       {footer && <div className="cat-footer">{footer}</div>}
