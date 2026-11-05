@@ -6,7 +6,7 @@ import Cat from "../cat/Cat";
 import { clean, LIMITS, validateCard, type FieldErrors } from "@/lib/card";
 import { STARTER_NOTES } from "@/lib/starter-notes";
 import ReadyScreen from "./ReadyScreen";
-import { clearDraft, EMPTY_DRAFT, useDraft, type Draft } from "./useDraft";
+import { clearDraft, useDraft, type Draft } from "./useDraft";
 
 // Errors shown under a field: the card's own fields, plus the write-your-own box.
 type Errors = FieldErrors & { write?: string };
@@ -20,7 +20,8 @@ export default function Builder() {
   const [fieldErrors, setFieldErrors] = useState<Errors>({});
   const [creating, setCreating] = useState(false);
   const [preview, setPreview] = useState(false);
-  const [link, setLink] = useState<string | null>(null);
+  // The made cat's link, and who it's for (the draft is cleared once the link is made).
+  const [made, setMade] = useState<{ link: string; name: string } | null>(null);
   const toRef = useRef<HTMLInputElement>(null);
   const fromRef = useRef<HTMLInputElement>(null);
   const notesRef = useRef<HTMLElement>(null);
@@ -33,6 +34,7 @@ export default function Builder() {
     if (!preview) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const previewBtn = previewBtnRef.current; // focus goes back here when the preview closes
     backBtnRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setPreview(false);
@@ -41,7 +43,7 @@ export default function Builder() {
     return () => {
       document.body.style.overflow = prev;
       document.removeEventListener("keydown", onKey);
-      previewBtnRef.current?.focus();
+      previewBtn?.focus();
     };
   }, [preview]);
 
@@ -119,25 +121,28 @@ export default function Builder() {
         return;
       }
       if (!res.ok || !body.id) throw new Error(body.error || "Couldn't create the link. Try again.");
-      setLink(`${window.location.origin}/c/${body.id}`);
+      setMade({ link: `${window.location.origin}/c/${body.id}`, name: result.card.to });
       clearDraft();
       window.scrollTo({ top: 0 });
     } catch (e) {
-      setError(e instanceof Error && e.message !== "Failed to fetch" ? e.message : "Couldn't reach the server. Check your connection and try again.");
+      setError(
+        e instanceof Error && e.message !== "Failed to fetch"
+          ? e.message
+          : "Couldn't reach the server. Check your connection and try again.",
+      );
     } finally {
       setCreating(false);
     }
   };
 
   const startOver = () => {
-    setLink(null);
-    setDraft(EMPTY_DRAFT);
+    setMade(null);
     setWriting("");
     setError(null);
     setFieldErrors({});
   };
 
-  if (link) return <ReadyScreen link={link} name={clean(draft.to)} onAnother={startOver} />;
+  if (made) return <ReadyScreen link={made.link} name={made.name} onAnother={startOver} />;
 
   const previewTo = clean(draft.to) || null;
   const previewFrom = clean(draft.from) || null;
@@ -149,9 +154,7 @@ export default function Builder() {
           <Link href="/">[ send-a-cat ]</Link>
         </p>
         <h1>Send someone a cat that says nice things</h1>
-        <p className="lede">
-          Pick some messages or write your own.
-        </p>
+        <p className="lede">Pick some messages or write your own.</p>
 
         <section className="panel">
           <h2>Who&apos;s it for?</h2>
@@ -297,7 +300,6 @@ export default function Builder() {
             </div>
           ))}
         </section>
-
       </main>
 
       <div className="actions">

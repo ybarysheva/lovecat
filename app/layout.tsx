@@ -11,7 +11,14 @@ const mono = IBM_Plex_Mono({
   display: "swap",
 });
 
+// The site's public address, used to make link-preview image URLs absolute. On Vercel it's
+// the production domain (set automatically); locally it's the dev server.
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : `http://localhost:${process.env.PORT ?? 3000}`;
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "send-a-cat",
   description: "Send someone a little cat that tells them nice things when they pet it.",
 };

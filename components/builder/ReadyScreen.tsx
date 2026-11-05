@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+
+const noSubscribe = () => () => {};
 
 type Props = {
   link: string;
@@ -14,9 +16,12 @@ type Props = {
 export default function ReadyScreen({ link, name, onAnother }: Props) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [canShare, setCanShare] = useState(false);
-
-  useEffect(() => setCanShare(typeof navigator.share === "function"), []);
+  // Phones can open their share sheet; the server and most desktops can't.
+  const canShare = useSyncExternalStore(
+    noSubscribe,
+    () => typeof navigator.share === "function",
+    () => false,
+  );
 
   useEffect(() => {
     if (!copied) return;

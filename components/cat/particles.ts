@@ -45,7 +45,10 @@ function spawn(root: HTMLElement, o: Rising) {
         opacity: 1,
         offset: 0.65,
       },
-      { transform: `translate(calc(-50% + ${spread}px), calc(-50% - ${rise}px)) scale(0.7) rotate(${rot}deg)`, opacity: 0 },
+      {
+        transform: `translate(calc(-50% + ${spread}px), calc(-50% - ${rise}px)) scale(0.7) rotate(${rot}deg)`,
+        opacity: 0,
+      },
     ],
     { duration: rand(o.durationMs), fill: "forwards" },
   )

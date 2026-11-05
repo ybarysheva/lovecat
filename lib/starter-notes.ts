@@ -39,4 +39,3 @@ export const STARTER_NOTES: { group: string; notes: string[] }[] = [
     ],
   },
 ];
-

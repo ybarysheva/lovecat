@@ -55,5 +55,11 @@ export function createBubble(bubble: HTMLElement, text: HTMLElement, { later, ca
     later(() => bubble.classList.remove("hide"), 220);
   }
 
-  return { show, hide, get visible() { return visible; } };
+  return {
+    show,
+    hide,
+    get visible() {
+      return visible;
+    },
+  };
 }

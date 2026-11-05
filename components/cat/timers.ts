@@ -29,7 +29,14 @@ export function createTimers() {
     live.clear();
   };
 
-  return { later, cancel, dispose, get disposed() { return disposed; } };
+  return {
+    later,
+    cancel,
+    dispose,
+    get disposed() {
+      return disposed;
+    },
+  };
 }
 
 export type Timers = ReturnType<typeof createTimers>;

@@ -229,7 +229,10 @@ export function drawRoom(canvas: HTMLCanvasElement, width: number, height: numbe
           const joint = Math.abs(zf - Math.round(zf)) * FLOORBOARDS.plank * ((depth * depth) / vanish) < 0.55;
           if (seam || joint) tone = Math.max(tone, FLOORBOARDS.line * toward);
           // The bed's shadow, darkest right under its edge and fading out.
-          const sd = Math.hypot((x + 0.5 - cx) / (BED_SHADOW.rx * s), (y + 0.5 - (cat.top + BED_SHADOW.y * s)) / (BED_SHADOW.ry * s));
+          const sd = Math.hypot(
+            (x + 0.5 - cx) / (BED_SHADOW.rx * s),
+            (y + 0.5 - (cat.top + BED_SHADOW.y * s)) / (BED_SHADOW.ry * s),
+          );
           tone += BED_SHADOW.ink * (1 - smoothstep(0.35, 1, sd));
         }
         ink = ditherInk(tone * side, x, y);

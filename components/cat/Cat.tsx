@@ -26,8 +26,12 @@ type Props = {
 // unmount.
 export default function Cat({ to, from, notes, footer }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
+  // The behaviour reads the latest notes through this, so the builder's preview picks up
+  // edits without restarting the cat.
   const notesRef = useRef(notes);
-  notesRef.current = notes;
+  useEffect(() => {
+    notesRef.current = notes;
+  });
   // Unique per cat so the tail's pattern id never clashes; useId is stable between server and browser.
   const ditherId = "cat-dither-" + useId().replace(/[^a-zA-Z0-9_-]/g, "");
 
@@ -78,7 +82,13 @@ export default function Cat({ to, from, notes, footer }: Props) {
               <svg className="cat-tail" viewBox="0 0 300 340" aria-hidden="true">
                 <defs>
                   <pattern id={ditherId} width="340" height="340" patternUnits="userSpaceOnUse">
-                    <image href="/tex/tail.png" width="340" height="340" preserveAspectRatio="none" style={{ imageRendering: "pixelated" }} />
+                    <image
+                      href="/tex/tail.png"
+                      width="340"
+                      height="340"
+                      preserveAspectRatio="none"
+                      style={{ imageRendering: "pixelated" }}
+                    />
                   </pattern>
                 </defs>
                 <path className="cat-tail-path" d={tailPath(0)} fill={`url(#${ditherId})`} />
@@ -97,8 +107,12 @@ export default function Cat({ to, from, notes, footer }: Props) {
 
               {/* Face group: ears + head animate together on treat catch */}
               <div className="cat-face-group">
-                <div className="cat-ear cat-ear--l"><div className="cat-ear-inner"></div></div>
-                <div className="cat-ear cat-ear--r"><div className="cat-ear-inner"></div></div>
+                <div className="cat-ear cat-ear--l">
+                  <div className="cat-ear-inner"></div>
+                </div>
+                <div className="cat-ear cat-ear--r">
+                  <div className="cat-ear-inner"></div>
+                </div>
 
                 <div className="cat-head">
                   <div className="cat-head-stripe cat-head-stripe--c"></div>
@@ -160,7 +174,11 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
   const bubble = createBubble($("[data-bubble]"), $("[data-bubble-text]"), timers);
   const nextNote = createNoteBag(getNotes);
   const throwTreat = createTreat(root, treatBag, $(".cat-mouth"), body, timers);
-  const laser = createLaser({ root, button: laserBtn, cat, face, paws: [$(".cat-paw--l"), $(".cat-paw--r")] }, body, timers);
+  const laser = createLaser(
+    { root, button: laserBtn, cat, face, paws: [$(".cat-paw--l"), $(".cat-paw--r")] },
+    body,
+    timers,
+  );
 
   function pet() {
     replay(squish, "squishing");
@@ -262,6 +280,8 @@ function startCat(root: HTMLElement, getNotes: () => string[]): () => void {
     laser.dispose();
     resized.disconnect();
     events.abort();
-    root.querySelectorAll(".treat-flying, .heart-particle, .star-particle, .laser-dot, .fly").forEach((el) => el.remove());
+    root
+      .querySelectorAll(".treat-flying, .heart-particle, .star-particle, .laser-dot, .fly")
+      .forEach((el) => el.remove());
   };
 }

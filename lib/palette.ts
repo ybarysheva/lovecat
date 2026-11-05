@@ -8,7 +8,12 @@ export type RGB = readonly [number, number, number];
 export const INK: RGB = [0x1c, 0x14, 0x10];
 export const PAPER: RGB = [0xd4, 0xc5, 0xa9];
 
-export const hex = (c: RGB) => "#" + c.map((v) => v.toString(16).padStart(2, "0")).join("").toUpperCase();
+export const hex = (c: RGB) =>
+  "#" +
+  c
+    .map((v) => v.toString(16).padStart(2, "0"))
+    .join("")
+    .toUpperCase();
 export const INK_HEX = hex(INK);
 export const PAPER_HEX = hex(PAPER);
 

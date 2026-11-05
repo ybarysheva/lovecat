@@ -42,7 +42,15 @@ type StrandSpec = {
 };
 const STRANDS: StrandSpec[] = [
   { throughSwag: true, bare: 19 * K, length: 165 * K, lean: 2, wander: 11, periodMs: 5600, phase: 0, seed: 11 },
-  { from: (w) => Math.min(w * 0.7, w - 95), length: 105 * K, lean: -3, wander: 9, periodMs: 4700, phase: 2.1, seed: 29 },
+  {
+    from: (w) => Math.min(w * 0.7, w - 95),
+    length: 105 * K,
+    lean: -3,
+    wander: 9,
+    periodMs: 4700,
+    phase: 2.1,
+    seed: 29,
+  },
 ];
 // Only the lower ends of the strands move: the sway fades in over the last `swayFrom` of
 // their length, up to `amplitude` degrees at the tip.
@@ -59,10 +67,19 @@ const LEAF = { min: 8 * K, max: 18 * K, stroke: 0.75 }; // outline width: thin, 
  */
 function leafPath(x0: number, size: number, wide: number, lopsided: number, bend: number) {
   const pts = [
-    [0, 0], [-0.05, -0.3], [0.3, -0.48], [0.58, -0.32],
-    [0.78, -0.2], [0.93, -0.08 + bend * 0.5], [1, bend],
-    [0.93, 0.08 + bend * 0.5], [0.78, 0.2], [0.58, 0.32],
-    [0.3, 0.48], [-0.05, 0.3], [0, 0],
+    [0, 0],
+    [-0.05, -0.3],
+    [0.3, -0.48],
+    [0.58, -0.32],
+    [0.78, -0.2],
+    [0.93, -0.08 + bend * 0.5],
+    [1, bend],
+    [0.93, 0.08 + bend * 0.5],
+    [0.78, 0.2],
+    [0.58, 0.32],
+    [0.3, 0.48],
+    [-0.05, 0.3],
+    [0, 0],
   ].map(([x, y], i) => {
     const half = i > 0 && i < 6 ? 1 + lopsided : i > 6 && i < 12 ? 1 - lopsided : 1;
     const yy = i === 5 || i === 6 || i === 7 ? y : y * (wide / 0.48) * half;
@@ -161,7 +178,14 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
   let swag: Strand | null = null;
   let strands: { strand: Strand; spec: StrandSpec }[] = [];
 
-  function makeLeaf(group: SVGGElement, at: number, side: 1 | -1, rnd: () => number, droop: number, even = false): Leaf {
+  function makeLeaf(
+    group: SVGGElement,
+    at: number,
+    side: 1 | -1,
+    rnd: () => number,
+    droop: number,
+    even = false,
+  ): Leaf {
     // Even leaves (the swag) stay close to one size and shape; the strands vary a lot.
     const size = even ? (12 + rnd() * 3) * K : LEAF.min + rnd() * (LEAF.max - LEAF.min);
     // Some leaves face us (wide), some are turned away (narrow).
@@ -220,7 +244,13 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     bareAt?: { at: number; half: number },
   ): Strand {
     const group = el("g", {});
-    const stem = el("path", { fill: "none", stroke: INK, "stroke-width": 1.4, "stroke-linecap": "round", "stroke-linejoin": "round" });
+    const stem = el("path", {
+      fill: "none",
+      stroke: INK,
+      "stroke-width": 1.4,
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    });
     group.appendChild(stem);
     const rnd = seededRandom(seed); // so the leaves land in the same places every time
     const leaves: Leaf[] = [];
@@ -233,7 +263,7 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
       }
     } else {
       // Irregular: mostly alternating sides, now and then two close together.
-      for (let at = 4 + rnd() * leafEvery; at < length - 3; ) {
+      for (let at = 4 + rnd() * leafEvery; at < length - 3;) {
         if (bareAt && Math.abs(at - bareAt.at) < bareAt.half) {
           at = bareAt.at + bareAt.half;
           continue;
@@ -261,7 +291,10 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
     strands = STRANDS.map((spec) => ({
       spec,
       strand: spec.throughSwag
-        ? makeStrand(crossAt + spec.length, STRAND.leafEvery, spec.seed, 0.3, false, { at: crossAt, half: spec.bare ?? 0 })
+        ? makeStrand(crossAt + spec.length, STRAND.leafEvery, spec.seed, 0.3, false, {
+            at: crossAt,
+            half: spec.bare ?? 0,
+          })
         : makeStrand(spec.length, STRAND.leafEvery, spec.seed, 0.3),
     }));
     swag = makeStrand(220 * K, SWAG.leafEvery, 7, 0.5, true);
@@ -283,7 +316,10 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
       while (diff > Math.PI) diff -= Math.PI * 2;
       while (diff < -Math.PI) diff += Math.PI * 2;
       const a = out + diff * leaf.droop;
-      leaf.el.setAttribute("transform", `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${((a * 180) / Math.PI).toFixed(1)})`);
+      leaf.el.setAttribute(
+        "transform",
+        `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${((a * 180) / Math.PI).toFixed(1)})`,
+      );
     }
   }
 
@@ -294,7 +330,8 @@ export function createVines(svg: SVGSVGElement, idPrefix: string) {
         // Straight down from the top edge to the swag's lowest point, then hanging on below it.
         const above: Point[] = [];
         const steps = Math.max(1, Math.round((low.y - TOP) / STRAND.segment));
-        for (let i = 0; i < steps; i++) above.push({ x: low.x, y: TOP + ((low.y - TOP) * i) / steps, angle: Math.PI / 2 });
+        for (let i = 0; i < steps; i++)
+          above.push({ x: low.x, y: TOP + ((low.y - TOP) * i) / steps, angle: Math.PI / 2 });
         place(strand, [...above, ...hangingSpine(low.x, low.y, spec, t)]);
       } else {
         place(strand, hangingSpine(spec.from?.(width) ?? 0, TOP, spec, t));

@@ -1,4 +1,3 @@
-
 /* Ported from the original lil cat page (ybarysheva/love). Selectors that were
    ids there are classes here; the page's body styles now live on .cat-scene. */
 
@@ -14,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 
 /* Background canvas: the room corner and wallpaper (components/room.ts). One canvas
@@ -44,10 +43,10 @@
 
 /* vignette */
 .cat-scene::after {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.40) 100%);
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.4) 100%);
   pointer-events: none;
   z-index: 9999;
 }
@@ -79,7 +78,7 @@
   font-size: 0.88rem;
   line-height: 1.65;
   color: var(--ink);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   filter: drop-shadow(3px 3px 0 var(--ink));
   text-align: center;
   position: relative;
@@ -90,7 +89,7 @@
 }
 
 .bubble::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -17px;
   left: 50%;
@@ -100,7 +99,7 @@
   border-top: 14px solid var(--ink);
 }
 .bubble::before {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -11px;
   left: 50%;
@@ -122,12 +121,24 @@
 }
 
 @keyframes bubblePop {
-  from { transform: scale(0); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 @keyframes bubbleHide {
-  from { transform: scale(1); opacity: 1; }
-  to   { transform: scale(0.85); opacity: 0; }
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.85);
+    opacity: 0;
+  }
 }
 
 /* ---- CAT WRAPPERS ---- */
@@ -135,38 +146,84 @@
    the body swells upward from its base and the head rises with it. Uses the
    `scale`/`translate` properties so it never fights the transforms used for the
    head tilt, purr and squish. */
-.cat-body { animation: breatheBody 3.6s ease-in-out infinite; transform-origin: 50% 100%; }
-.cat-face-group { animation: breatheHead 3.6s ease-in-out infinite; }
+.cat-body {
+  animation: breatheBody 3.6s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+.cat-face-group {
+  animation: breatheHead 3.6s ease-in-out infinite;
+}
 
-.cat-squish { transform-origin: center bottom; cursor: pointer; }
-.cat-squish.squishing { animation: squish 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.cat-squish {
+  transform-origin: center bottom;
+  cursor: pointer;
+}
+.cat-squish.squishing {
+  animation: squish 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
 @keyframes breatheBody {
-  0%, 100% { scale: 1 1; }
-  45%      { scale: 1.006 1.02; }
+  0%,
+  100% {
+    scale: 1 1;
+  }
+  45% {
+    scale: 1.006 1.02;
+  }
 }
 @keyframes breatheHead {
-  0%, 100% { translate: 0 0; }
-  45%      { translate: 0 -2px; }
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  45% {
+    translate: 0 -2px;
+  }
 }
 @keyframes squish {
-  0%   { transform: scaleX(1)    scaleY(1);    }
-  20%  { transform: scaleX(1.28) scaleY(0.72); }
-  55%  { transform: scaleX(0.88) scaleY(1.14); }
-  78%  { transform: scaleX(1.06) scaleY(0.96); }
-  100% { transform: scaleX(1)    scaleY(1);    }
+  0% {
+    transform: scaleX(1) scaleY(1);
+  }
+  20% {
+    transform: scaleX(1.28) scaleY(0.72);
+  }
+  55% {
+    transform: scaleX(0.88) scaleY(1.14);
+  }
+  78% {
+    transform: scaleX(1.06) scaleY(0.96);
+  }
+  100% {
+    transform: scaleX(1) scaleY(1);
+  }
 }
 
 /* ---- IDLE ANIMATIONS ---- */
 @keyframes blink {
-  0%, 92%, 100% { transform: scaleY(1); }
-  95%            { transform: scaleY(0.07); }
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.07);
+  }
 }
 @keyframes earTwitch {
-  0%, 88%, 100% { transform: rotate(6deg); }
-  91%           { transform: rotate(-9deg); }
-  95%           { transform: rotate(14deg); }
-  98%           { transform: rotate(4deg); }
+  0%,
+  88%,
+  100% {
+    transform: rotate(6deg);
+  }
+  91% {
+    transform: rotate(-9deg);
+  }
+  95% {
+    transform: rotate(14deg);
+  }
+  98% {
+    transform: rotate(4deg);
+  }
 }
 
 /* ---- LASER REACTIONS ---- */
@@ -188,50 +245,95 @@
   animation: none;
   transition: transform 0.25s ease-out;
 }
-.cat-ear--l, .cat-ear--r {
+.cat-ear--l,
+.cat-ear--r {
   transition: transform 0.35s ease-out;
 }
 
 /* 4. Paw swipe — two variants for left/right */
 @keyframes pawSwipeL {
-  0%   { transform: translateY(0)     rotate(0deg);   }
-  30%  { transform: translateY(-22px) rotate(-28deg); }
-  60%  { transform: translateY(-18px) rotate(-18deg); }
-  100% { transform: translateY(0)     rotate(0deg);   }
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-22px) rotate(-28deg);
+  }
+  60% {
+    transform: translateY(-18px) rotate(-18deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
 }
 @keyframes pawSwipeR {
-  0%   { transform: translateY(0)    rotate(0deg);  }
-  30%  { transform: translateY(-22px) rotate(28deg); }
-  60%  { transform: translateY(-18px) rotate(18deg); }
-  100% { transform: translateY(0)    rotate(0deg);  }
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-22px) rotate(28deg);
+  }
+  60% {
+    transform: translateY(-18px) rotate(18deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
 }
-.cat-paw--l.swiping { animation: pawSwipeL 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
-.cat-paw--r.swiping { animation: pawSwipeR 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
+.cat-paw--l.swiping {
+  animation: pawSwipeL 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+.cat-paw--r.swiping {
+  animation: pawSwipeR 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
 
 /* 5. Pounce: after enough swipes the cat catches the dot. Both paws lift, then slam
    down and close in over the spot between them. */
 @keyframes pounceL {
-  0%   { transform: translate(0, 0)       rotate(0deg)   scale(1, 1);       }
-  40%  { transform: translate(4px, -30px) rotate(-12deg) scale(1, 1);       }
-  62%  { transform: translate(20px, 3px)  rotate(0deg)   scale(1.12, 0.8);  }
-  82%  { transform: translate(18px, 0)    rotate(0deg)   scale(1.04, 0.94); }
-  100% { transform: translate(0, 0)       rotate(0deg)   scale(1, 1);       }
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1, 1);
+  }
+  40% {
+    transform: translate(4px, -30px) rotate(-12deg) scale(1, 1);
+  }
+  62% {
+    transform: translate(20px, 3px) rotate(0deg) scale(1.12, 0.8);
+  }
+  82% {
+    transform: translate(18px, 0) rotate(0deg) scale(1.04, 0.94);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1, 1);
+  }
 }
 @keyframes pounceR {
-  0%   { transform: translate(0, 0)        rotate(0deg)  scale(1, 1);       }
-  40%  { transform: translate(-4px, -30px) rotate(12deg) scale(1, 1);       }
-  62%  { transform: translate(-20px, 3px)  rotate(0deg)  scale(1.12, 0.8);  }
-  82%  { transform: translate(-18px, 0)    rotate(0deg)  scale(1.04, 0.94); }
-  100% { transform: translate(0, 0)        rotate(0deg)  scale(1, 1);       }
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1, 1);
+  }
+  40% {
+    transform: translate(-4px, -30px) rotate(12deg) scale(1, 1);
+  }
+  62% {
+    transform: translate(-20px, 3px) rotate(0deg) scale(1.12, 0.8);
+  }
+  82% {
+    transform: translate(-18px, 0) rotate(0deg) scale(1.04, 0.94);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1, 1);
+  }
 }
-.cat-paw--l.pouncing { animation: pounceL 0.55s ease-in-out; }
-.cat-paw--r.pouncing { animation: pounceR 0.55s ease-in-out; }
+.cat-paw--l.pouncing {
+  animation: pounceL 0.55s ease-in-out;
+}
+.cat-paw--r.pouncing {
+  animation: pounceR 0.55s ease-in-out;
+}
 
 /* ---- LABEL ---- */
 /* The label and "from" line sit on the floor's dither, so each gets a plain paper
    underlay. Their softer ink is a solid color (not opacity) so the underlay stays solid. */
 .cat-label {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 0.82rem;
   color: color-mix(in srgb, var(--ink) 88%, var(--paper));
   background: var(--paper);
@@ -254,14 +356,16 @@
    scrolls (the scene's bottom padding keeps room for it). Above the vignette. */
 .cat-footer {
   position: absolute;
-  left: 0; right: 0;
+  left: 0;
+  right: 0;
   bottom: max(14px, env(safe-area-inset-bottom));
   text-align: center;
   z-index: 10000;
   font-size: 0.68rem;
   letter-spacing: 0.06em;
 }
-.cat-footer a, .cat-footer button {
+.cat-footer a,
+.cat-footer button {
   font: inherit;
   color: var(--paper);
   background: var(--ink);
@@ -271,12 +375,19 @@
   text-decoration: none;
   cursor: pointer;
 }
-.cat-footer a:hover, .cat-footer button:hover { text-decoration: underline; }
+.cat-footer a:hover,
+.cat-footer button:hover {
+  text-decoration: underline;
+}
 
 /* Landing page: a bigger "send someone a cat" button, pinned to the bottom of the
    screen so it's always visible. The padding keeps room for it. */
-.cat-scene:has(.cat-cta) { padding-bottom: 96px; }
-.cat-scene:has(.cat-cta) .cat-footer { position: fixed; }
+.cat-scene:has(.cat-cta) {
+  padding-bottom: 96px;
+}
+.cat-scene:has(.cat-cta) .cat-footer {
+  position: fixed;
+}
 .cat-footer a.cat-cta {
   display: inline-block;
   font-size: 0.95rem;
@@ -289,13 +400,23 @@
 
 /* Bubble text can't overflow a narrow phone, and on phones it sits above the
    treat bag and laser (fixed, z-index 100) so the note is never covered. */
-.bubble { max-width: min(300px, calc(100vw - 40px)); overflow-wrap: anywhere; z-index: 150; }
+.bubble {
+  max-width: min(300px, calc(100vw - 40px));
+  overflow-wrap: anywhere;
+  z-index: 150;
+}
 /* Long notes get smaller text so even a 200-character note fits above the cat. */
-.bubble.bubble--long { font-size: 0.76rem; line-height: 1.5; padding: 10px 14px; }
+.bubble.bubble--long {
+  font-size: 0.76rem;
+  line-height: 1.5;
+  padding: 10px 14px;
+}
 
 /* Short screens (small phones): shrink the whole cat a little so it fits without scrolling. */
 @media (max-height: 640px) {
-  .stage { zoom: 0.85; }
+  .stage {
+    zoom: 0.85;
+  }
 }
 
 /* ================================================================
@@ -347,10 +468,30 @@
   background: var(--ink);
   border-radius: 3px;
 }
-.cat-stripe--1 { top: 10px; left: 20px;  height: 46px; transform: rotate(-16deg); }
-.cat-stripe--2 { top: 8px;  left: 40px;  height: 40px; transform: rotate(-8deg);  }
-.cat-stripe--3 { top: 10px; right: 20px; height: 46px; transform: rotate(16deg);  }
-.cat-stripe--4 { top: 8px;  right: 40px; height: 40px; transform: rotate(8deg);   }
+.cat-stripe--1 {
+  top: 10px;
+  left: 20px;
+  height: 46px;
+  transform: rotate(-16deg);
+}
+.cat-stripe--2 {
+  top: 8px;
+  left: 40px;
+  height: 40px;
+  transform: rotate(-8deg);
+}
+.cat-stripe--3 {
+  top: 10px;
+  right: 20px;
+  height: 46px;
+  transform: rotate(16deg);
+}
+.cat-stripe--4 {
+  top: 8px;
+  right: 40px;
+  height: 40px;
+  transform: rotate(8deg);
+}
 .cat-belly {
   position: absolute;
   bottom: 4px;
@@ -370,13 +511,19 @@
   border-radius: 50% 50% 46% 54% / 52% 52% 48% 48%;
   z-index: 15;
 }
-.cat-paw--l { left: 76px;  }
-.cat-paw--r { right: 76px; }
+.cat-paw--l {
+  left: 76px;
+}
+.cat-paw--r {
+  right: 76px;
+}
 .cat-paw::before {
-  content: '';
+  content: "";
   position: absolute;
-  top: 18%; left: 34%;
-  width: 1.5px; height: 66%;
+  top: 18%;
+  left: 34%;
+  width: 1.5px;
+  height: 66%;
   background: var(--paper);
   border-radius: 1px;
   opacity: 0.55;
@@ -393,11 +540,21 @@
 
 /* Mouth snaps open to catch the treat */
 @keyframes mouthOpen {
-  0%   { transform: translateX(-50%) scaleY(1)   scaleX(1);    }
-  22%  { transform: translateX(-50%) scaleY(3.2) scaleX(1.55); }
-  55%  { transform: translateX(-50%) scaleY(2.8) scaleX(1.35); }
-  82%  { transform: translateX(-50%) scaleY(1.2) scaleX(1.05); }
-  100% { transform: translateX(-50%) scaleY(1)   scaleX(1);    }
+  0% {
+    transform: translateX(-50%) scaleY(1) scaleX(1);
+  }
+  22% {
+    transform: translateX(-50%) scaleY(3.2) scaleX(1.55);
+  }
+  55% {
+    transform: translateX(-50%) scaleY(2.8) scaleX(1.35);
+  }
+  82% {
+    transform: translateX(-50%) scaleY(1.2) scaleX(1.05);
+  }
+  100% {
+    transform: translateX(-50%) scaleY(1) scaleX(1);
+  }
 }
 .cat-mouth.open {
   transform-origin: 50% 0%;
@@ -413,14 +570,17 @@
   z-index: 18;
 }
 .cat-ear::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   clip-path: polygon(50% 0%, 4% 100%, 96% 100%);
 }
 .cat-ear-inner {
   position: absolute;
-  top: 30%; left: 24%; right: 24%; bottom: 6px;
+  top: 30%;
+  left: 24%;
+  right: 24%;
+  bottom: 6px;
   clip-path: polygon(50% 0%, 10% 100%, 90% 100%);
   z-index: 2;
 }
@@ -438,8 +598,10 @@
 /* ---------- HEAD (75% dark) ---------- */
 .cat-head {
   position: absolute;
-  top: 54px; left: 92px;
-  width: 116px; height: 112px;
+  top: 54px;
+  left: 92px;
+  width: 116px;
+  height: 112px;
   border-radius: 50%;
   z-index: 20;
   overflow: visible;
@@ -452,73 +614,131 @@
   border-radius: 2px;
   width: 4px;
 }
-.cat-head-stripe--c { top: 5px;  left: 56px;  height: 26px; }
-.cat-head-stripe--l { top: 8px;  left: 35px;  height: 20px; width: 3px; transform: rotate(-5deg); }
-.cat-head-stripe--r { top: 8px;  right: 35px; height: 20px; width: 3px; transform: rotate(5deg);  }
+.cat-head-stripe--c {
+  top: 5px;
+  left: 56px;
+  height: 26px;
+}
+.cat-head-stripe--l {
+  top: 8px;
+  left: 35px;
+  height: 20px;
+  width: 3px;
+  transform: rotate(-5deg);
+}
+.cat-head-stripe--r {
+  top: 8px;
+  right: 35px;
+  height: 20px;
+  width: 3px;
+  transform: rotate(5deg);
+}
 
 /* blush — 25% light */
 .cat-blush {
   position: absolute;
   top: 63px;
-  width: 28px; height: 14px;
+  width: 28px;
+  height: 14px;
   border-radius: 50%;
 }
-.cat-blush--l { left: 5px;  }
-.cat-blush--r { right: 5px; }
+.cat-blush--l {
+  left: 5px;
+}
+.cat-blush--r {
+  right: 5px;
+}
 
 /* EYE BACKGROUND RINGS — paper circles behind ink eyes for contrast */
 .cat-eye-bg {
   position: absolute;
   top: 35px;
-  width: 22px; height: 22px;
+  width: 22px;
+  height: 22px;
   background: var(--paper);
   border-radius: 50%;
 }
-.cat-eye-bg--l { left: 16px;  }
-.cat-eye-bg--r { right: 16px; }
+.cat-eye-bg--l {
+  left: 16px;
+}
+.cat-eye-bg--r {
+  right: 16px;
+}
 
 /* EYES — solid ink */
-.cat-eye-l, .cat-eye-r {
+.cat-eye-l,
+.cat-eye-r {
   position: absolute;
   top: 39px;
-  width: 14px; height: 14px;
+  width: 14px;
+  height: 14px;
   background: var(--ink);
   border-radius: 50%;
   transform-origin: center center;
   animation: blink 4.2s ease-in-out infinite;
 }
-.cat-eye-l  { left: 20px;  }
+.cat-eye-l {
+  left: 20px;
+}
 /* Pupils glide toward the laser dot (set via the `translate` property, which leaves the
    blink animation's transform alone). */
-.cat-eye-l, .cat-eye-r { transition: translate 0.08s linear; }
-.cat-eye-r  { right: 20px; animation-delay: 0.07s; }
-.cat-eye-l::before, .cat-eye-r::before {
-  content: '';
+.cat-eye-l,
+.cat-eye-r {
+  transition: translate 0.08s linear;
+}
+.cat-eye-r {
+  right: 20px;
+  animation-delay: 0.07s;
+}
+.cat-eye-l::before,
+.cat-eye-r::before {
+  content: "";
   position: absolute;
-  top: 10%; left: 50%;
-  width: 5px; height: 5px;
+  top: 10%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
   background: var(--paper);
   border-radius: 50%;
 }
 
 /* Happy squint, held while purring (after a treat or a catch) */
 @keyframes catchAndPurr {
-  0%   { transform: scaleY(1);    }
-  6%   { transform: scaleY(0.08); }
-  78%  { transform: scaleY(0.2);  }
-  90%  { transform: scaleY(0.2);  }
-  100% { transform: scaleY(1);    }
+  0% {
+    transform: scaleY(1);
+  }
+  6% {
+    transform: scaleY(0.08);
+  }
+  78% {
+    transform: scaleY(0.2);
+  }
+  90% {
+    transform: scaleY(0.2);
+  }
+  100% {
+    transform: scaleY(1);
+  }
 }
-.cat-eye-l.eyes-purring, .cat-eye-r.eyes-purring {
+.cat-eye-l.eyes-purring,
+.cat-eye-r.eyes-purring {
   animation: catchAndPurr 4s ease-out forwards !important;
 }
 
 /* Purr micro-vibration on cat body */
 @keyframes purrVibe {
-  0%   { transform: scaleX(1)     scaleY(1);     }
-  25%  { transform: scaleX(1.008) scaleY(0.994); }
-  75%  { transform: scaleX(0.993) scaleY(1.005); }
-  100% { transform: scaleX(1)     scaleY(1);     }
+  0% {
+    transform: scaleX(1) scaleY(1);
+  }
+  25% {
+    transform: scaleX(1.008) scaleY(0.994);
+  }
+  75% {
+    transform: scaleX(0.993) scaleY(1.005);
+  }
+  100% {
+    transform: scaleX(1) scaleY(1);
+  }
 }
 .css-cat.cat-purring {
   animation: purrVibe 0.22s linear infinite;
@@ -534,8 +754,15 @@
   line-height: 1;
   color: var(--ink);
   /* thin paper outline so stars stay visible over the cat's dark fur */
-  text-shadow: 1px 0 var(--paper), -1px 0 var(--paper), 0 1px var(--paper), 0 -1px var(--paper),
-    1px 1px var(--paper), -1px -1px var(--paper), 1px -1px var(--paper), -1px 1px var(--paper);
+  text-shadow:
+    1px 0 var(--paper),
+    -1px 0 var(--paper),
+    0 1px var(--paper),
+    0 -1px var(--paper),
+    1px 1px var(--paper),
+    -1px -1px var(--paper),
+    1px -1px var(--paper),
+    -1px 1px var(--paper);
   transform: translate(-50%, -50%);
 }
 
@@ -551,18 +778,22 @@
 /* MUZZLE PATCH — 50% dither oval, lower face (contrast for nose/mouth) */
 .cat-muzzle {
   position: absolute;
-  bottom: 16px; left: 50%;
+  bottom: 16px;
+  left: 50%;
   transform: translateX(-50%);
-  width: 54px; height: 38px;
+  width: 54px;
+  height: 38px;
   border-radius: 50%;
 }
 
 /* NOSE — solid ink */
 .cat-nose {
   position: absolute;
-  top: 62px; left: 50%;
+  top: 62px;
+  left: 50%;
   transform: translateX(-50%);
-  width: 14px; height: 10px;
+  width: 14px;
+  height: 10px;
   background: var(--ink);
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }
@@ -570,9 +801,11 @@
 /* MOUTH */
 .cat-mouth {
   position: absolute;
-  top: 71px; left: 50%;
+  top: 71px;
+  left: 50%;
   transform: translateX(-50%);
-  width: 20px; height: 9px;
+  width: 20px;
+  height: 9px;
   border: 2.5px solid var(--ink);
   border-top: none;
   border-radius: 0 0 12px 12px;
@@ -581,52 +814,120 @@
 /* WHISKERS — paper color (visible against dark head) */
 .cat-whisker {
   position: absolute;
-  height: 1.5px; width: 62px;
+  height: 1.5px;
+  width: 62px;
   background: var(--paper);
   border-radius: 1px;
   opacity: 0.9;
 }
 .cat-whisker--l1,
 .cat-whisker--l2,
-.cat-whisker--l3 { right: 59%; transform-origin: right center; top: 63px; }
+.cat-whisker--l3 {
+  right: 59%;
+  transform-origin: right center;
+  top: 63px;
+}
 .cat-whisker--r1,
 .cat-whisker--r2,
-.cat-whisker--r3 { left: 59%;  transform-origin: left center;  top: 63px; }
+.cat-whisker--r3 {
+  left: 59%;
+  transform-origin: left center;
+  top: 63px;
+}
 
-.cat-whisker--l1 { transform: rotate(-22deg); }
-.cat-whisker--l2 { transform: rotate(-3deg);  }
-.cat-whisker--l3 { transform: rotate(16deg);  }
-.cat-whisker--r1 { transform: rotate(-22deg); }
-.cat-whisker--r2 { transform: rotate(-3deg);  }
-.cat-whisker--r3 { transform: rotate(16deg);  }
+.cat-whisker--l1 {
+  transform: rotate(-22deg);
+}
+.cat-whisker--l2 {
+  transform: rotate(-3deg);
+}
+.cat-whisker--l3 {
+  transform: rotate(16deg);
+}
+.cat-whisker--r1 {
+  transform: rotate(-22deg);
+}
+.cat-whisker--r2 {
+  transform: rotate(-3deg);
+}
+.cat-whisker--r3 {
+  transform: rotate(16deg);
+}
 
 /* ---- SHADED TEXTURES ----
    1-bit, Obra Dinn-style: each part is shaded as a lit form (light from the upper left)
    and ordered-dithered into ink/paper. Generated by scripts/dither-textures.ts; one
    texture pixel is one 1×1px cat pixel, kept crisp by image-rendering: pixelated. */
-.cat-cloud, .cat-body, .cat-belly, .cat-paw, .cat-ear::after, .cat-ear-inner,
-.cat-head, .cat-blush, .cat-muzzle {
+.cat-cloud,
+.cat-body,
+.cat-belly,
+.cat-paw,
+.cat-ear::after,
+.cat-ear-inner,
+.cat-head,
+.cat-blush,
+.cat-muzzle {
   background-repeat: no-repeat;
   image-rendering: pixelated;
 }
-.cat-cloud       { background-image: url("/tex/cloud.png");       background-size: 288px 82px;  }
-.cat-body        { background-image: url("/tex/body.png");        background-size: 172px 104px; }
-.cat-belly       { background-image: url("/tex/belly.png");       background-size: 86px 44px;   }
-.cat-paw--l      { background-image: url("/tex/paw-l.png");       background-size: 50px 22px;   }
-.cat-paw--r      { background-image: url("/tex/paw-r.png");       background-size: 50px 22px;   }
-.cat-ear--l::after { background-image: url("/tex/ear-l.png");     background-size: 42px 52px;   }
-.cat-ear--r::after { background-image: url("/tex/ear-r.png");     background-size: 42px 52px;   }
-.cat-ear--l .cat-ear-inner { background-image: url("/tex/ear-inner-l.png"); background-size: 22px 30px; }
-.cat-ear--r .cat-ear-inner { background-image: url("/tex/ear-inner-r.png"); background-size: 22px 30px; }
-.cat-head        { background-image: url("/tex/head.png");        background-size: 116px 112px; }
-.cat-blush--l    { background-image: url("/tex/blush-l.png");     background-size: 28px 14px;   }
-.cat-blush--r    { background-image: url("/tex/blush-r.png");     background-size: 28px 14px;   }
-.cat-muzzle      { background-image: url("/tex/muzzle.png");      background-size: 54px 38px;   }
+.cat-cloud {
+  background-image: url("/tex/cloud.png");
+  background-size: 288px 82px;
+}
+.cat-body {
+  background-image: url("/tex/body.png");
+  background-size: 172px 104px;
+}
+.cat-belly {
+  background-image: url("/tex/belly.png");
+  background-size: 86px 44px;
+}
+.cat-paw--l {
+  background-image: url("/tex/paw-l.png");
+  background-size: 50px 22px;
+}
+.cat-paw--r {
+  background-image: url("/tex/paw-r.png");
+  background-size: 50px 22px;
+}
+.cat-ear--l::after {
+  background-image: url("/tex/ear-l.png");
+  background-size: 42px 52px;
+}
+.cat-ear--r::after {
+  background-image: url("/tex/ear-r.png");
+  background-size: 42px 52px;
+}
+.cat-ear--l .cat-ear-inner {
+  background-image: url("/tex/ear-inner-l.png");
+  background-size: 22px 30px;
+}
+.cat-ear--r .cat-ear-inner {
+  background-image: url("/tex/ear-inner-r.png");
+  background-size: 22px 30px;
+}
+.cat-head {
+  background-image: url("/tex/head.png");
+  background-size: 116px 112px;
+}
+.cat-blush--l {
+  background-image: url("/tex/blush-l.png");
+  background-size: 28px 14px;
+}
+.cat-blush--r {
+  background-image: url("/tex/blush-r.png");
+  background-size: 28px 14px;
+}
+.cat-muzzle {
+  background-image: url("/tex/muzzle.png");
+  background-size: 54px 38px;
+}
 
 /* ---- TREAT BAG (fixed, top-right) ---- */
 .treat-bag {
   position: fixed;
-  top: 22px; right: 26px;
+  top: 22px;
+  right: 26px;
   cursor: pointer;
   z-index: 100;
   display: flex;
@@ -635,16 +936,22 @@
   user-select: none;
   transition: transform 0.12s;
 }
-.treat-bag:hover  { transform: scale(1.1) rotate(-5deg); }
-.treat-bag:active { transform: scale(0.92); }
+.treat-bag:hover {
+  transform: scale(1.1) rotate(-5deg);
+}
+.treat-bag:active {
+  transform: scale(0.92);
+}
 
 .bag-knot {
-  width: 14px; height: 8px;
+  width: 14px;
+  height: 8px;
   background: var(--ink);
   border-radius: 4px 4px 0 0;
 }
 .bag-body {
-  width: 40px; height: 50px;
+  width: 40px;
+  height: 50px;
   /* shaded dither texture, like the cat (scripts/dither-textures.ts) */
   background: url("/tex/bag.png") border-box 0 0 / 40px 50px no-repeat;
   image-rendering: pixelated;
@@ -662,13 +969,13 @@
   line-height: 1;
 }
 .bag-label-text {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 6px;
   color: var(--paper);
   letter-spacing: 0.12em;
 }
 .bag-hint {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 0.6rem;
   color: color-mix(in srgb, var(--ink) 88%, var(--paper));
   background: var(--paper); /* paper underlay, so the wallpaper never shows through */
@@ -680,7 +987,8 @@
 /* ---- LASER POINTER ---- */
 .laser-btn {
   position: fixed;
-  top: 116px; right: 26px;
+  top: 116px;
+  right: 26px;
   cursor: pointer;
   z-index: 100;
   display: flex;
@@ -689,14 +997,28 @@
   user-select: none;
   transition: transform 0.12s;
 }
-.laser-btn:hover  { transform: scale(1.1) rotate(-5deg); }
-.laser-btn:active { transform: scale(0.92); }
-.laser-btn.active { opacity: 0.5; }
+.laser-btn:hover {
+  transform: scale(1.1) rotate(-5deg);
+}
+.laser-btn:active {
+  transform: scale(0.92);
+}
+.laser-btn.active {
+  opacity: 0.5;
+}
 
 /* While the laser is on, dragging a finger moves the dot instead of scrolling or selecting. */
-.cat-scene.laser-on { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.cat-scene.laser-on {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
 /* With a mouse, the red dot is the pointer: hide the arrow while the laser is on. */
-.cat-scene.laser-on, .cat-scene.laser-on * { cursor: none !important; }
+.cat-scene.laser-on,
+.cat-scene.laser-on * {
+  cursor: none !important;
+}
 
 .laser-body {
   position: relative;
@@ -710,11 +1032,13 @@
 }
 /* button bump on top */
 .laser-body::before {
-  content: '';
+  content: "";
   position: absolute;
-  top: 7px; left: 50%;
+  top: 7px;
+  left: 50%;
   transform: translateX(-50%);
-  width: 8px; height: 5px;
+  width: 8px;
+  height: 5px;
   background: var(--ink);
   border-radius: 2px;
 }
@@ -728,13 +1052,14 @@
 }
 /* red emitter dot on tip */
 .laser-emitter {
-  width: 6px; height: 6px;
+  width: 6px;
+  height: 6px;
   background: #c0392b;
   border-radius: 50%;
   margin-top: 3px;
 }
 .laser-hint {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 0.6rem;
   color: color-mix(in srgb, var(--ink) 88%, var(--paper));
   background: var(--paper); /* paper underlay, so the wallpaper never shows through */
@@ -752,21 +1077,30 @@
   pointer-events: none;
   will-change: transform;
 }
-.fly svg { display: block; overflow: visible; }
+.fly svg {
+  display: block;
+  overflow: visible;
+}
 .fly-wings {
   transform-box: fill-box;
   transform-origin: center;
   animation: flutter 0.07s linear infinite;
 }
 @keyframes flutter {
-  0%, 100% { transform: scaleY(1); }
-  50%      { transform: scaleY(0.4); }
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.4);
+  }
 }
 
 /* Red laser dot */
 .laser-dot {
   position: fixed;
-  width: 9px; height: 9px;
+  width: 9px;
+  height: 9px;
   background: #e8150a;
   border-radius: 50%;
   pointer-events: none;
@@ -777,7 +1111,8 @@
 /* Flying treat dot */
 .treat-flying {
   position: fixed;
-  width: 10px; height: 10px;
+  width: 10px;
+  height: 10px;
   background: var(--ink);
   border-radius: 50%;
   pointer-events: none;
@@ -788,5 +1123,10 @@
 /* "Reduce motion": stop the idle loops (breathing, ear twitch, purr vibration). The tail,
    vines and fly are stopped in Cat.tsx. Reactions to taps still play. */
 @media (prefers-reduced-motion: reduce) {
-  .cat-body, .cat-face-group, .cat-ear--r, .css-cat.cat-purring { animation: none; }
+  .cat-body,
+  .cat-face-group,
+  .cat-ear--r,
+  .css-cat.cat-purring {
+    animation: none;
+  }
 }

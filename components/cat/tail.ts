@@ -48,7 +48,10 @@ export function tailPath(phase: number, amplitude = TAIL_SWISH.amplitude): strin
   const tipR = (TIP_WIDTH / 2).toFixed(1);
   return (
     `M ${f(left[0])} ` +
-    left.slice(1).map((p) => `L ${f(p)}`).join(" ") +
+    left
+      .slice(1)
+      .map((p) => `L ${f(p)}`)
+      .join(" ") +
     ` A ${tipR} ${tipR} 0 0 0 ${f(right[right.length - 1])} ` +
     right
       .slice(0, -1)

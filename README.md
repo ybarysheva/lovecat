@@ -30,6 +30,16 @@ vercel env pull .env.local
 npm run dev
 ```
 
+## Checks
+
+```bash
+npm run check      # lint, formatting, types and unit tests
+npm run test:e2e   # browser smoke tests (desktop and phone) against a production build
+npm run format     # fix formatting
+```
+
+The first time on a new machine, run `npx playwright install chromium` before the browser tests. GitHub Actions runs both on every push (`.github/workflows/ci.yml`).
+
 ## Deploy
 
 1. Import this repo in Vercel. Pushes to the production branch deploy production.
